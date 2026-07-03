@@ -520,6 +520,7 @@
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v5" id="tab-v5">v5 · Deterministic</button>
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v6" id="tab-v6">v6 · Multi-locator</button>
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v7" id="tab-v7">v7 · Failure Explainer</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v8" id="tab-v8">v8 · Screenshot (vision)</button>
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-roadmap" id="tab-roadmap">Roadmap</button>
       </div>
 
@@ -862,6 +863,43 @@ drift     -> cached selector fails  -> re-heal</pre>
         </div>
       </section>
 
+      <!-- ================= V8 ================= -->
+      <section id="panel-v8" role="tabpanel" aria-labelledby="tab-v8" hidden>
+        <div class="summary">
+          <article class="card"><span class="kicker blue">Input</span><strong>+ Page screenshot</strong><p>A PNG of the page at failure time rides along with the error and DOM.</p></article>
+          <article class="card"><span class="kicker blue">Model</span><strong>Multimodal</strong><p>Sent as an <code>image_url</code> content part to a vision model (<code>XAI_VISION_MODEL</code>).</p></article>
+          <article class="card"><span class="kicker green">Why</span><strong>Sees the render</strong><p>Overlays, spinners, layout breakage the DOM text can't convey.</p></article>
+          <article class="card"><span class="kicker amber">Limit</span><strong>Not an oracle</strong><p>An image can't reveal whether a missing feature is <em>supposed</em> to exist.</p></article>
+        </div>
+
+        <div class="shell">
+          <div class="topbar">
+            <div>
+              <strong>Multimodal failure analysis — the model sees the page, not just its DOM</strong>
+              <p class="status">The screenshot sharpens the description; product-intent ambiguity still needs history/spec (mode B).</p>
+            </div>
+          </div>
+          <div class="stage" style="grid-template-columns: 1fr 1fr;">
+            <article class="node">
+              <h3>Request (user turn)</h3>
+              <pre class="code">[
+  { "type": "text",  "text": "{ title, error, url, domSnapshot }" },
+  { "type": "image_url",
+    "image_url": { "url": "data:image/png;base64,…", "detail": "high" } }
+]</pre>
+            </article>
+            <article class="node">
+              <h3>Adds signal the DOM misses</h3>
+              <pre class="code">✓ form still visible, no navigation
+✓ modal/overlay covering the button
+✓ spinner never resolved
+✓ broken/off-screen layout
+✗ "is a dashboard supposed to exist?"  (needs spec/history)</pre>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <!-- ================= ROADMAP ================= -->
       <section id="panel-roadmap" role="tabpanel" aria-labelledby="tab-roadmap" hidden>
         <div class="shell">
@@ -874,10 +912,11 @@ drift     -> cached selector fails  -> re-heal</pre>
               <li><strong>v5:</strong> deterministic-first resolution to avoid the LLM on easy cases.</li>
               <li><strong>v6:</strong> multi-locator cache so single-attribute drift heals from a fallback.</li>
               <li><strong>v7:</strong> Failure Explainer (Task 3 Option A) — on failure, send page state + error to xAI and attach a categorized explanation to the report.</li>
+              <li><strong>v8:</strong> attach a page screenshot to the failure request (multimodal), so the model sees the render, not just the DOM text.</li>
             </ul>
             <h3>Still planned</h3>
             <ul>
-              <li><strong>v7 mode B:</strong> move the LLM call to a post-run reporter — batch all final failures, dedup by error signature, one grouped report.</li>
+              <li><strong>v7 mode B:</strong> move the LLM call to a post-run reporter — batch all final failures, dedup by error signature, and enrich with run history + git diff to sharpen classification.</li>
               <li><strong>Refusal rules:</strong> never heal destructive actions (delete, pay, submit-order) without an explicit allow-list.</li>
               <li><strong>Report trends:</strong> attach heal timelines to the HTML report and chart selector drift across runs.</li>
             </ul>

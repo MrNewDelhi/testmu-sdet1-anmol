@@ -43,6 +43,8 @@ export interface FailureAnalysisRequest {
   domSnapshot: string;
   /** Optional API status/body for API-level failures. */
   apiResponse?: string;
+  /** Optional base64 PNG of the page at failure time (v8, multimodal). */
+  screenshotBase64?: string;
 }
 
 export interface FailureAnalysisResponse {
@@ -91,22 +93,34 @@ export class XaiClient {
    * Real chat-completion call under a strict JSON schema.
    */
   async explainFailure(input: FailureAnalysisRequest): Promise<FailureAnalysisResponse> {
+    const { screenshotBase64, ...textInput } = input;
+
+    // With a screenshot the user turn is multimodal: the JSON context as text
+    // plus the page image, so the model can see what the page actually looked like.
+    const userContent = screenshotBase64
+      ? [
+          { type: 'text', text: JSON.stringify(textInput) },
+          { type: 'image_url', image_url: { url: `data:image/png;base64,${screenshotBase64}`, detail: 'high' } },
+        ]
+      : JSON.stringify(textInput);
+
     const content = await this.chatCompletion('failure-analysis', {
+      model: screenshotBase64 ? env.xaiVisionModel : env.xaiModel,
       messages: [
         {
           role: 'system',
           content:
             'You are a senior SDET triaging an automated test failure. Given the error, the '
-            + 'page state, and any API response, explain in plain English what broke and suggest a '
-            + 'concrete fix. Classify the failure as exactly one of: product-bug (a real defect in '
-            + 'the app), environment (infra/network/config), flaky (timing/nondeterminism), or '
-            + 'test-bug (the test/assertion is wrong). Be specific and concise.',
+            + 'page state, an optional screenshot of the page, and any API response, explain in plain '
+            + 'English what broke and suggest a concrete fix. Classify the failure as exactly one of: '
+            + 'product-bug (a real defect in the app), environment (infra/network/config), flaky '
+            + '(timing/nondeterminism), or test-bug (the test/assertion is wrong). Be specific and concise.',
         },
-        { role: 'user', content: JSON.stringify(input) },
+        { role: 'user', content: userContent },
       ],
       schemaName: 'failure_analysis',
       schema: failureAnalysisSchema,
-    });
+    }, { hasScreenshot: Boolean(screenshotBase64) });
 
     const parsed = JSON.parse(content) as FailureAnalysisResponse;
     if (!parsed.summary || !parsed.category || !parsed.rootCause || !parsed.suggestedFix) {
@@ -123,10 +137,12 @@ export class XaiClient {
    */
   private async chatCompletion(
     kind: 'repair' | 'failure-analysis',
-    options: { messages: unknown[]; schemaName: string; schema: unknown },
+    options: { messages: unknown[]; schemaName: string; schema: unknown; model?: string },
+    meta: { hasScreenshot?: boolean } = {},
   ): Promise<string> {
+    const model = options.model ?? env.xaiModel;
     const body = JSON.stringify({
-      model: env.xaiModel,
+      model,
       temperature: 0,
       messages: options.messages,
       response_format: {
@@ -147,7 +163,7 @@ export class XaiClient {
 
       if (!response.ok) {
         const text = await response.text();
-        this.logCall({ kind, latencyMs: Date.now() - started, ok: false, status: response.status, requestBytes: body.length, error: text.slice(0, 300) });
+        this.logCall({ kind, model, hasScreenshot: meta.hasScreenshot, latencyMs: Date.now() - started, ok: false, status: response.status, requestBytes: body.length, error: text.slice(0, 300) });
         throw new Error(`xAI ${kind} failed: ${response.status} ${text}`);
       }
 
@@ -158,6 +174,8 @@ export class XaiClient {
       const content = payload.choices?.[0]?.message?.content;
       this.logCall({
         kind,
+        model,
+        hasScreenshot: meta.hasScreenshot,
         latencyMs: Date.now() - started,
         ok: true,
         status: response.status,
@@ -172,14 +190,14 @@ export class XaiClient {
     } catch (error) {
       // Network/throw before a response was logged.
       if (error instanceof Error && !error.message.startsWith(`xAI ${kind}`)) {
-        this.logCall({ kind, latencyMs: Date.now() - started, ok: false, status: 0, requestBytes: body.length, error: error.message.slice(0, 300) });
+        this.logCall({ kind, model, hasScreenshot: meta.hasScreenshot, latencyMs: Date.now() - started, ok: false, status: 0, requestBytes: body.length, error: error.message.slice(0, 300) });
       }
       throw error;
     }
   }
 
   private logCall(entry: Record<string, unknown>): void {
-    const line = { timestamp: new Date().toISOString(), model: env.xaiModel, ...entry };
+    const line = { timestamp: new Date().toISOString(), ...entry };
     try {
       mkdirSync(xaiLogDir, { recursive: true });
       appendFileSync(xaiLogFile, `${JSON.stringify(line)}\n`);

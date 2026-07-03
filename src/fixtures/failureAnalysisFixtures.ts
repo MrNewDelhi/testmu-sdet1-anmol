@@ -50,6 +50,15 @@ export const test = base.extend<{ failureAnalysis: void }>({
         // Page may be closed/navigated; analysis still runs on the error alone.
       }
 
+      // v8: a screenshot of the page at failure time, so the model can see what
+      // the page actually looked like, not just the DOM text.
+      let screenshotBase64: string | undefined;
+      try {
+        screenshotBase64 = (await page.screenshot()).toString('base64');
+      } catch {
+        // No live page (e.g. API test) — analysis proceeds without an image.
+      }
+
       const context = {
         title: testInfo.titlePath.join(' > '),
         error: [testInfo.error?.message, testInfo.error?.stack].filter(Boolean).join('\n'),
@@ -61,6 +70,7 @@ export const test = base.extend<{ failureAnalysis: void }>({
           }
         })(),
         domSnapshot,
+        screenshotBase64,
       };
 
       try {

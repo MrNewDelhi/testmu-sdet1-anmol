@@ -78,6 +78,7 @@ The self-healing framework evolves across six versions, each with a visualizer t
 | v5 | Deterministic-first (skip the LLM on easy breaks) | `npm run test:self-healing:v5` |
 | v6 | Multi-locator cache (survive single-attribute drift) | `npm run test:self-healing:v6` |
 | v7 | Failure Explainer (Task 3 Option A) — analyze failures, attach to report | `npm run test:self-healing:v7` |
+| v8 | Screenshot attached to the failure request (multimodal) | `npm run test:self-healing:v7` (now sends a screenshot) |
 
 Run every version plus the framework unit tests with `npm run test:self-healing`. Open the animated version tabs with `npm run serve:demo`.
 
@@ -90,7 +91,8 @@ This is the assignment's core Task 3 deliverable: a real xAI call wired into the
 - Trigger discipline: only on a genuine failure, and only on the **final** retry (so a flake that passes on retry is never analyzed), with a per-run budget and error-signature dedup, and a graceful skip when `XAI_API_KEY` is unset.
 - `npm run test:self-healing:v7` runs a deliberately-failing demo (expected to fail) with a custom `FailureAnalysisReporter` that writes `playwright-report/failure-analysis.html` + `.json`. A committed sample is at `sample-output/failure-analysis.json`.
 - The always-green `tests/framework/failure-explainer.spec.ts` exercises the real xAI call on a simulated failure so CI covers the integration without a red test.
-- Next (mode B): move the LLM call to a post-run reporter to batch and dedup failures across the whole run.
+- **v8 (multimodal):** the fixture also captures a page screenshot and sends it as an `image_url` content part, so the model sees the actual render (overlays, spinners, layout breakage), not just the DOM text. Uses `XAI_VISION_MODEL` (defaults to `XAI_MODEL`); the live call is covered by `tests/framework/failure-explainer-vision.spec.ts`. Note: a screenshot sharpens the *description* but cannot resolve product-intent ambiguity (whether a missing feature is supposed to exist) — that needs run history / spec, which is mode B's job.
+- Next (mode B): move the LLM call to a post-run reporter to batch and dedup failures across the whole run, enriched with run history and the git diff.
 
 - Task 3 remaining: v7 mode B (batched post-run reporter), destructive-action refusal allow-list, and heal-trend reporting.
 - Task 3 final: publish sample output and reporting artifacts.

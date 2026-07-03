@@ -91,6 +91,24 @@ deduped. See `src/framework/failure-analysis/FailureExplainer.ts`,
 `src/reporters/FailureAnalysisReporter.ts`, and
 `tests/framework/failure-explainer.spec.ts`.
 
+### v8: send the screenshot too (multimodal)
+
+The fixture also captures a page screenshot at failure time and sends it as an
+`image_url` content part, so the model sees the actual render (overlays,
+spinners, layout breakage) rather than only the DOM text. It uses a configurable
+`XAI_VISION_MODEL`.
+
+What it does and does not fix: a screenshot makes the *description* more
+concrete, but it cannot resolve the fundamental product-intent ambiguity. In the
+demo, "the page never shows a dashboard" is visible in the image, yet whether a
+dashboard is *supposed* to exist is a spec question — so xAI still leans
+product-bug where the honest label is test-bug. Closing that gap needs run
+history / the diff / the spec, which is mode B's job, not the image's.
+
+Every xAI call (repair and analysis, text or multimodal) is recorded in
+`src/agents/self-healing/xai-calls.jsonl` with latency, status, token usage, and
+a `hasScreenshot` flag for debugging and cost tracking.
+
 ## Why Generated Cases Now Help
 
 The generated Task 2 cases are not default executable tests anymore. They are structured design artifacts with Playwright-style drafts and self-healing notes. This keeps `npm test` clean while preserving the interview evidence for:

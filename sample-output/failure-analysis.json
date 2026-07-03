@@ -4,10 +4,10 @@
     "url": "http://127.0.0.1:9323/demo/login.html",
     "error": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#status')\nExpected: \u001b[32m\"\u001b[7mDashboard load\u001b[27med\"\u001b[39m\nReceived: \u001b[31m\"\u001b[7mLogin submitt\u001b[27med\"\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('#status')\u001b[22m\n\u001b[2m    14 × locator resolved to <p id=\"status\" aria-live=\"polite\">Login submitted</p>\u001b[22m\n\u001b[2m       - unexpected value \"Login submitted\"\u001b[22m\n\nError: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[2",
     "analysis": {
-      "summary": "Test expects #status to become 'Dashboard loaded' after login submit, but it stays at 'Login submitted' and the login form remains visible.",
+      "summary": "Test expects #status to become \"Dashboard loaded\" after login submit, but it stays at \"Login submitted\" (form still visible, no navigation or status update occurs).",
       "category": "product-bug",
-      "rootCause": "Login submit handler only sets status text to 'Login submitted' and performs no further action (no auth, no navigation, no dashboard render).",
-      "suggestedFix": "Implement the submit handler to validate credentials, then replace the form with dashboard content and set status to 'Dashboard loaded'."
+      "rootCause": "Login submit handler (or subsequent redirect/dashboard render) is not implemented or is broken; the page only ever sets status to \"Login submitted\" and never reaches the dashboard state the test asserts.",
+      "suggestedFix": "Implement the login success path so that a valid submit updates #status to \"Dashboard loaded\" (or navigates to the dashboard page) and update the test selector/timing if the final text differs."
     }
   }
 ]

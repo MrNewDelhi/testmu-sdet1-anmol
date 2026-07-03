@@ -6,6 +6,9 @@ export const env = {
   apiBaseUrl: process.env.API_BASE_URL ?? 'https://restful-booker.herokuapp.com',
   xaiApiKey: process.env.XAI_API_KEY ?? '',
   xaiModel: process.env.XAI_MODEL ?? 'grok-4.3',
+  // Model used for multimodal (screenshot) failure analysis; defaults to the
+  // main model, override with XAI_VISION_MODEL if it lacks vision support.
+  xaiVisionModel: process.env.XAI_VISION_MODEL ?? process.env.XAI_MODEL ?? 'grok-4.3',
 };
 
 export function requireXaiApiKey(): string {
