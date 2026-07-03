@@ -2,8 +2,10 @@
 
 An AI-native test framework built for the TestMu SDET-1 challenge. Beyond the required tasks, it grows a **self-healing locator engine** and a **failure-intelligence pipeline** across 11 iterations — each one a real, tested step, wired to a live LLM (xAI Grok), with a **deterministic-first, privacy-first** design.
 
+**▶ Live demo (GitHub Pages): https://mrnewdelhi.github.io/testmu-sdet1-anmol/**
+
 - **Stack:** TypeScript · Playwright · SQLite (`node:sqlite`) · xAI Grok
-- **Live demos:** `npm run test:self-healing` (all versions) · `npm run serve:demo` (interactive visualizer)
+- **Live demos:** the hosted visualizer above · `npm run test:self-healing` (all versions) · `npm run serve:demo` (local)
 - **The interesting part:** an LLM is used as a *judge and last resort*, not a hammer — deterministic code and a cache do the cheap work, guardrails gate the model's output, and user data is redacted before it ever leaves the box.
 
 ---
