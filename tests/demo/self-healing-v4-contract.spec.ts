@@ -34,7 +34,7 @@ function fakeXai(selector: string, confidence = 0.95): XaiClient {
       confidence,
       reason: 'fixed response for guardrail test',
     }),
-  } as XaiClient;
+  } as unknown as XaiClient;
 }
 
 test.describe('self-healing v4 - contract disambiguation', () => {

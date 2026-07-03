@@ -23,7 +23,7 @@ function fixedXai(selector: string, confidence = 0.95): { xai: XaiClient; calls:
       calls.n += 1;
       return { selector, confidence, reason: 'fixed response' };
     },
-  } as XaiClient;
+  } as unknown as XaiClient;
   return { xai, calls };
 }
 

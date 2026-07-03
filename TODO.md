@@ -62,6 +62,10 @@
 - [x] Add v6 multi-locator cache (store the target's top-3 attribute-diverse locators) so single-attribute drift heals from a fallback.
 - [x] Add a v6 demo: rename the primary id and heal from the data-testid locator with no xAI call.
 - [x] Give each of the six versions its own visualizer tab and demo script.
+- [x] Add v7 Failure Explainer (Task 3 Option A): on failure, send page state + error to xAI and attach a categorized explanation to the report.
+- [x] Trigger the explainer only on the final failed attempt, with a per-run budget, dedup, and a no-key skip.
+- [x] Add a custom FailureAnalysisReporter writing playwright-report/failure-analysis.html + .json, a v7 demo/script, a v7 visualizer tab, and a sample output.
+- [ ] v7 mode B: move the LLM call to a post-run reporter (batch all final failures, dedup by error signature, one grouped report).
 - [ ] Add a destructive-action refusal allow-list (delete/pay/submit-order) on top of the contract.
 - [ ] Add a code comment explaining why the final Task 3 option was selected over the other assignment option.
 - [x] Attach or output the LLM response inside v1 test results.

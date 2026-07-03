@@ -3,7 +3,9 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
-  testIgnore: ['**/tests/generated/**'],
+  // Generated design artifacts and the deliberately-failing v7 demo are excluded
+  // from the default run (the v7 demo runs via playwright.failure-demo.config.ts).
+  testIgnore: ['**/tests/generated/**', '**/tests/failure-demo/**'],
   timeout: 30_000,
   expect: {
     timeout: 5_000

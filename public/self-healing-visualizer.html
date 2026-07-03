@@ -519,6 +519,7 @@
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v4" id="tab-v4">v4 · Disambiguation</button>
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v5" id="tab-v5">v5 · Deterministic</button>
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v6" id="tab-v6">v6 · Multi-locator</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v7" id="tab-v7">v7 · Failure Explainer</button>
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-roadmap" id="tab-roadmap">Roadmap</button>
       </div>
 
@@ -818,20 +819,65 @@ drift     -> cached selector fails  -> re-heal</pre>
         </div>
       </section>
 
+      <!-- ================= V7 ================= -->
+      <section id="panel-v7" role="tabpanel" aria-labelledby="tab-v7" hidden>
+        <div class="summary">
+          <article class="card"><span class="kicker amber">Trigger</span><strong>On failure only</strong><p>Green tests are never analyzed — no wasted calls.</p></article>
+          <article class="card"><span class="kicker amber">Retries</span><strong>Final attempt</strong><p>Skip flakes that pass on retry; analyze only the last failed try.</p></article>
+          <article class="card"><span class="kicker blue">Context</span><strong>Page state + error</strong><p>DOM snapshot, URL, and the assertion error (or API response) go to xAI.</p></article>
+          <article class="card"><span class="kicker green">Output</span><strong>Categorized + attached</strong><p>Summary, root cause, fix, and a category on the report.</p></article>
+        </div>
+
+        <div class="shell">
+          <div class="topbar">
+            <div>
+              <strong>Failure Explainer — Task 3 Option A (real xAI call)</strong>
+              <p class="status" id="v7-status">A login test asserted the wrong success text and failed.</p>
+            </div>
+            <div class="controls">
+              <button class="btn primary" type="button" id="v7-analyze">Analyze failure</button>
+              <button class="btn" type="button" id="v7-reset">Reset</button>
+            </div>
+          </div>
+          <div class="stage" style="grid-template-columns: 1fr;">
+            <div>
+              <pre class="code">✘ login shows the dashboard after submit
+  expect(#status).toHaveText('Dashboard loaded')
+  received: 'Login submitted'</pre>
+              <div id="v7-analysis" hidden style="margin-top:14px">
+                <article class="candidate pass">
+                  <div class="cand-body" style="width:100%">
+                    <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+                      <strong>xAI analysis (attached to the report)</strong>
+                      <span style="background:#128a54;color:#fff;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:700">category: test-bug</span>
+                    </div>
+                    <p class="cand-note"><strong>Summary:</strong> #status stays "Login submitted"; the test expected "Dashboard loaded".</p>
+                    <p class="cand-note"><strong>Root cause:</strong> the assertion targets a state this flow never reaches.</p>
+                    <p class="cand-note"><strong>Suggested fix:</strong> assert "Login submitted", or add a dashboard transition and update the expectation.</p>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ================= ROADMAP ================= -->
       <section id="panel-roadmap" role="tabpanel" aria-labelledby="tab-roadmap" hidden>
         <div class="shell">
           <div class="roadmap">
-            <h3>Shipped (v1–v6)</h3>
+            <h3>Shipped (v1–v7)</h3>
             <ul>
               <li><strong>v1–v2:</strong> naive xAI locator repair, centralized into a shared service + fixture.</li>
               <li><strong>v3:</strong> programmatic confidence gate + SQLite locator cache.</li>
               <li><strong>v4:</strong> target-contract disambiguation (refuse the confident-but-wrong element).</li>
               <li><strong>v5:</strong> deterministic-first resolution to avoid the LLM on easy cases.</li>
               <li><strong>v6:</strong> multi-locator cache so single-attribute drift heals from a fallback.</li>
+              <li><strong>v7:</strong> Failure Explainer (Task 3 Option A) — on failure, send page state + error to xAI and attach a categorized explanation to the report.</li>
             </ul>
             <h3>Still planned</h3>
             <ul>
+              <li><strong>v7 mode B:</strong> move the LLM call to a post-run reporter — batch all final failures, dedup by error signature, one grouped report.</li>
               <li><strong>Refusal rules:</strong> never heal destructive actions (delete, pay, submit-order) without an explicit allow-list.</li>
               <li><strong>Report trends:</strong> attach heal timelines to the HTML report and chart selector drift across runs.</li>
             </ul>
@@ -1072,6 +1118,23 @@ drift     -> cached selector fails  -> re-heal</pre>
           rows.testid.querySelector('[data-mark]').textContent = '2';
           rows.testid.querySelector('[data-note]').innerHTML = 'Fallback — <strong>data-testid</strong> strategy.';
           status.textContent = 'Three locators are cached for the submit button. Rename the id to simulate drift.';
+        });
+      })();
+
+      // ---- v7 failure explainer ----------------------------------------
+      (function () {
+        const analyzeBtn = document.getElementById('v7-analyze');
+        const resetBtn = document.getElementById('v7-reset');
+        const box = document.getElementById('v7-analysis');
+        const status = document.getElementById('v7-status');
+        if (!analyzeBtn) return;
+        analyzeBtn.addEventListener('click', () => {
+          box.hidden = false;
+          status.textContent = 'Final failed attempt → page state + error sent to xAI → explanation attached to the report.';
+        });
+        resetBtn.addEventListener('click', () => {
+          box.hidden = true;
+          status.textContent = 'A login test asserted the wrong success text and failed.';
         });
       })();
     </script>

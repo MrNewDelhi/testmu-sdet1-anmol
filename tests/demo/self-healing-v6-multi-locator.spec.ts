@@ -17,7 +17,7 @@ function countingXai(): { xai: XaiClient; calls: { n: number } } {
       calls.n += 1;
       return { selector: '#actual-login-submit', confidence: 0.95, reason: 'counted' };
     },
-  } as XaiClient;
+  } as unknown as XaiClient;
   return { xai, calls };
 }
 

@@ -66,6 +66,31 @@ The LLM is the expensive part, so it should be the fallback, not the default.
   the data-testid or form+type locator — no re-heal, no LLM call. See
   `tests/demo/self-healing-v6-multi-locator.spec.ts`.
 
+## Failure Explainer (v7, Task 3 Option A)
+
+Distinct from healing: when a test fails, its page state and error are sent to
+xAI for a plain-English explanation, a category (product-bug / environment /
+flaky / test-bug), a root cause, and a suggested fix, attached to the report.
+
+Trigger discipline is the whole game here:
+
+- **On failure only** — green tests are never analyzed.
+- **Final attempt only** — with retries on, analyzing an earlier failed attempt
+  of a test that then passes would spend tokens explaining a non-failure and
+  produce a misleading report. Gate on
+  `status === 'failed' && retry === project.retries`.
+- **Budget + dedup** — one root cause failing many tests must not fan out into
+  many identical LLM calls; cap per run and dedup by error signature.
+- **Graceful skip** when `XAI_API_KEY` is absent.
+
+Mode A (shipped) analyzes at failure time in an auto-fixture with live page
+state. Mode B (next) captures context at failure time but defers the LLM calls
+to a post-run reporter, so failures across the whole run can be batched and
+deduped. See `src/framework/failure-analysis/FailureExplainer.ts`,
+`src/fixtures/failureAnalysisFixtures.ts`,
+`src/reporters/FailureAnalysisReporter.ts`, and
+`tests/framework/failure-explainer.spec.ts`.
+
 ## Why Generated Cases Now Help
 
 The generated Task 2 cases are not default executable tests anymore. They are structured design artifacts with Playwright-style drafts and self-healing notes. This keeps `npm test` clean while preserving the interview evidence for:

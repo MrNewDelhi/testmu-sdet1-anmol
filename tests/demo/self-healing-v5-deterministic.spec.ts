@@ -24,7 +24,7 @@ function countingXai(selector: string): { xai: XaiClient; calls: { n: number } }
       calls.n += 1;
       return { selector, confidence: 0.95, reason: 'counted call' };
     },
-  } as XaiClient;
+  } as unknown as XaiClient;
   return { xai, calls };
 }
 
