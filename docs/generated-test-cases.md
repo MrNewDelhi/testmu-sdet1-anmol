@@ -1,11 +1,15 @@
 # Generated Test Case Notes
 
-The generated Task 2 cases are now stored as Playwright-style artifacts, not executable `fixme` tests. This keeps the default report clean while preserving case design evidence.
+The generated Task 2 cases are stored as Playwright-style artifacts and are also implemented as executable module specs.
 
 ## Playwright Patterns Used
 
-- Default executable tests stay in Playwright's normal `.spec.ts` collection.
-- Generated cases live in `tests/generated/*.generated.ts` and are excluded through `testIgnore`.
+- Generated design artifacts live in `tests/generated/*.generated.ts` and are excluded through `testIgnore`.
+- Executable generated cases live in proper module specs:
+  - `tests/login/generated-login.spec.ts`
+  - `tests/dashboard/generated-dashboard.spec.ts`
+  - `tests/api/generated-api.spec.ts`
+- Web tests use POM classes from `src/pages/` and fixtures from `src/fixtures/testFixtures.ts`.
 - Case drafts prefer resilient Playwright locators:
   - role and accessible-name locators where the target exposes a stable user-facing contract
   - label/placeholder-aware form targeting where available
@@ -23,3 +27,19 @@ Playwright MCP was used against the LambdaTest eCommerce Playground login/accoun
 - Direct guest navigation to `route=account/account` redirects to `route=account/login`.
 
 These observations are reflected in the generated Login and Dashboard case artifacts.
+
+## Latest Execution Status
+
+`npm run test:generated:run` executes 21 tests across Login, Dashboard, and REST API.
+
+Latest local result:
+
+```text
+21 passed
+```
+
+The full default suite now includes these 21 generated cases plus the two self-healing demos:
+
+```text
+23 passed
+```

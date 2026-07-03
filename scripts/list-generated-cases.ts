@@ -19,3 +19,8 @@ for (const [moduleName, cases] of modules) {
 }
 
 console.log(`\nTotal generated cases: ${total}`);
+console.log('\nExecutable module specs:');
+console.log('- tests/login/generated-login.spec.ts');
+console.log('- tests/dashboard/generated-dashboard.spec.ts');
+console.log('- tests/api/generated-api.spec.ts');
+console.log('\nRun all 21 executable generated cases with: npm run test:generated:run');

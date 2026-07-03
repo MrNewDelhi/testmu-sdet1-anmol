@@ -10,3 +10,4 @@
 | ChatGpt 5.5 Light using Codex | Task 3 v2 centralized self-healing framework | Added a framework-level self-healing service, Playwright fixture, centralized demo test, docs, workflow update, and visualizer updates. |
 | ChatGpt 5.5 Light using Codex | Self-healing visualizer workflow improvement | Converted the visualizer from static explanation into animated Play/Step/Reset workflow playback for v1 and v2. |
 | ChatGpt 5.5 Light using Codex | Generated-case cleanup and self-healing scenario analysis | Converted Task 2 generated cases from skipped Playwright tests into generated artifacts, added a summary command, excluded generated artifacts from default test collection, and documented self-healing usefulness/refusal scenarios. |
+| ChatGpt 5.5 Light using Codex | Generated case automation with POM | Added page objects, fixtures, user factory, and split executable specs for 21 Login/Dashboard/API generated cases, then ran the full generated suite green. |

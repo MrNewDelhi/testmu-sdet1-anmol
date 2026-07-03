@@ -39,6 +39,9 @@ jobs:
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
         run: npm run test:self-healing:v2
 
+      - name: Run generated Login Dashboard API cases
+        run: npm run test:generated:run
+
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4

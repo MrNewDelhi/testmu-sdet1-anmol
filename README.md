@@ -37,6 +37,7 @@ ChatGpt 5.5 Light using Codex
 - Added sample v1 xAI selector-repair output in `sample-output/self-healing-v1.json`.
 - Added centralized Task 3 v2 framework layer with `SelfHealingService` and a shared Playwright `healing` fixture.
 - Upgraded the visualizer from static tabs to animated workflow playback for naive v1 and centralized v2.
+- Automated all 21 generated Task 2 cases using POM-based module specs.
 
 ## Planned Structure
 
@@ -77,9 +78,21 @@ The generated test cases are stored as reviewed Playwright-style artifacts:
 - `tests/generated/dashboard.generated.ts`
 - `tests/generated/api.generated.ts`
 
-They are intentionally excluded from the default Playwright test collection because Task 2 asks for generated case design, while `npm test` should show only real executable tests. Use `npm run test:generated:list` to review the generated case inventory.
+The design artifacts are intentionally excluded from Playwright collection, while the executable module specs are included in `npm test`. Use `npm run test:generated:list` to review the generated case inventory.
 
 Generation and Playwright MCP exploration notes are documented in `docs/generated-test-cases.md`.
+
+Executable generated test specs:
+
+- `tests/login/generated-login.spec.ts`
+- `tests/dashboard/generated-dashboard.spec.ts`
+- `tests/api/generated-api.spec.ts`
+
+Run all 21 generated executable cases:
+
+```bash
+npm run test:generated:run
+```
 
 Sample xAI repair output:
 
@@ -98,9 +111,10 @@ npm install
 npx tsc --noEmit
 npm test -- --list
 npm run test:generated:list
+npm run test:generated:run
 ```
 
-`npm test` runs executable framework tests only. Generated Task 2 cases are intentionally excluded from the default Playwright collection through `testIgnore` so the report does not show planned cases as skipped tests.
+`npm test` runs the executable generated module specs plus the self-healing framework demos. The non-executable generated design artifacts stay excluded through `testIgnore` so planned-case artifacts do not appear as skipped tests.
 
 ## Self-Healing v1 Demo
 

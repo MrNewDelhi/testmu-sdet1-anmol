@@ -2,6 +2,8 @@ import 'dotenv/config';
 
 export const env = {
   baseUrl: process.env.BASE_URL ?? 'http://127.0.0.1:9323',
+  webBaseUrl: process.env.WEB_BASE_URL ?? 'https://ecommerce-playground.lambdatest.io',
+  apiBaseUrl: process.env.API_BASE_URL ?? 'https://restful-booker.herokuapp.com',
   xaiApiKey: process.env.XAI_API_KEY ?? '',
   xaiModel: process.env.XAI_MODEL ?? 'grok-4.3',
 };
