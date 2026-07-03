@@ -6,732 +6,811 @@
     <title>Self-Healing Framework Visualizer</title>
     <style>
       :root {
-        --bg: #f6f8fb;
+        color-scheme: light dark;
+        --bg: #f4f6fb;
         --panel: #ffffff;
-        --ink: #152032;
-        --muted: #5c6b7c;
-        --line: #d9e1ec;
-        --blue: #1769e0;
-        --green: #147d4f;
+        --panel-2: #f8fafd;
+        --ink: #131b2b;
+        --muted: #5a6b80;
+        --line: #dce3ee;
+        --blue: #1f6feb;
+        --blue-soft: #e8f1ff;
+        --green: #128a54;
+        --green-soft: #e6f6ee;
         --amber: #8a5a00;
+        --amber-soft: #fff2d4;
+        --red: #c0392b;
+        --code-bg: #0f1729;
+        --code-ink: #d7e2f4;
+        --shadow: 0 12px 30px rgba(19, 27, 43, 0.08);
+        --radius: 12px;
       }
 
-      * {
-        box-sizing: border-box;
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0c1017;
+          --panel: #141b26;
+          --panel-2: #101722;
+          --ink: #e8eef8;
+          --muted: #93a2b8;
+          --line: #26303f;
+          --blue: #4f92ff;
+          --blue-soft: #16263f;
+          --green: #4cc38a;
+          --green-soft: #12261d;
+          --amber: #e0a94b;
+          --amber-soft: #2a2113;
+          --red: #ff6b5e;
+          --code-bg: #0a0f1a;
+          --code-ink: #cdd9ee;
+          --shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+        }
       }
+
+      :root[data-theme='light'] {
+        color-scheme: light;
+        --bg: #f4f6fb;
+        --panel: #ffffff;
+        --panel-2: #f8fafd;
+        --ink: #131b2b;
+        --muted: #5a6b80;
+        --line: #dce3ee;
+        --blue: #1f6feb;
+        --blue-soft: #e8f1ff;
+        --green: #128a54;
+        --green-soft: #e6f6ee;
+        --amber: #8a5a00;
+        --amber-soft: #fff2d4;
+        --red: #c0392b;
+        --code-bg: #0f1729;
+        --code-ink: #d7e2f4;
+        --shadow: 0 12px 30px rgba(19, 27, 43, 0.08);
+      }
+
+      :root[data-theme='dark'] {
+        color-scheme: dark;
+        --bg: #0c1017;
+        --panel: #141b26;
+        --panel-2: #101722;
+        --ink: #e8eef8;
+        --muted: #93a2b8;
+        --line: #26303f;
+        --blue: #4f92ff;
+        --blue-soft: #16263f;
+        --green: #4cc38a;
+        --green-soft: #12261d;
+        --amber: #e0a94b;
+        --amber-soft: #2a2113;
+        --red: #ff6b5e;
+        --code-bg: #0a0f1a;
+        --code-ink: #cdd9ee;
+        --shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+      }
+
+      * { box-sizing: border-box; }
 
       body {
         margin: 0;
-        font-family: Arial, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         background: var(--bg);
         color: var(--ink);
-      }
-
-      header,
-      main {
-        width: min(1120px, calc(100vw - 32px));
-        margin: 0 auto;
-      }
-
-      header {
-        padding: 34px 0 18px;
-      }
-
-      h1 {
-        margin: 0;
-        font-size: 32px;
-      }
-
-      header p {
-        max-width: 760px;
-        color: var(--muted);
         line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .wrap { width: min(1120px, calc(100vw - 32px)); margin: 0 auto; }
+
+      header { padding: 40px 0 8px; }
+
+      .eyebrow {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--blue);
+        margin-bottom: 10px;
+      }
+
+      h1 { margin: 0 0 10px; font-size: clamp(26px, 4vw, 34px); letter-spacing: -0.01em; }
+
+      header p { max-width: 760px; color: var(--muted); margin: 0; }
+
+      .theme-toggle {
+        position: absolute;
+        top: 20px;
+        right: max(16px, calc((100vw - 1120px) / 2));
+        border: 1px solid var(--line);
+        background: var(--panel);
+        color: var(--ink);
+        border-radius: 999px;
+        padding: 8px 14px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
       }
 
       .tabs {
         display: flex;
-        gap: 8px;
+        gap: 6px;
+        margin: 28px 0 20px;
         border-bottom: 1px solid var(--line);
-        margin-bottom: 20px;
       }
 
       .tab {
-        border: 1px solid var(--line);
-        border-bottom: 0;
-        background: var(--panel);
-        color: var(--ink);
-        padding: 10px 14px;
-        border-radius: 6px 6px 0 0;
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        padding: 12px 16px;
+        font-size: 15px;
+        font-weight: 600;
         cursor: pointer;
-        font-weight: 700;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
       }
 
-      .tab[aria-selected='true'] {
-        background: var(--blue);
-        color: white;
-        border-color: var(--blue);
-      }
+      .tab[aria-selected='true'] { color: var(--ink); border-bottom-color: var(--blue); }
 
-      .grid {
+      .summary {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 14px;
+        gap: 12px;
+        margin-bottom: 20px;
       }
 
-      .step,
-      .panel {
+      .card {
         border: 1px solid var(--line);
         background: var(--panel);
-        border-radius: 8px;
+        border-radius: var(--radius);
         padding: 16px;
       }
 
-      .step strong {
-        display: block;
-        margin-bottom: 8px;
+      .card .kicker {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: 999px;
+        margin-bottom: 10px;
       }
 
-      .step code,
-      pre {
-        white-space: pre-wrap;
-        overflow-wrap: anywhere;
-      }
+      .kicker.amber { background: var(--amber-soft); color: var(--amber); }
+      .kicker.green { background: var(--green-soft); color: var(--green); }
+      .kicker.blue { background: var(--blue-soft); color: var(--blue); }
 
-      .flow {
-        margin-top: 18px;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 14px;
-      }
-
-      .workflow-shell {
-        margin: 20px 0;
+      .card strong { display: block; margin-bottom: 4px; font-size: 15px; }
+      .card p { margin: 0; color: var(--muted); font-size: 13px; }
+      .card code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12px;
+        background: var(--panel-2);
         border: 1px solid var(--line);
-        border-radius: 8px;
-        background: var(--panel);
-        overflow: hidden;
+        border-radius: 5px;
+        padding: 1px 5px;
       }
 
-      .workflow-topbar {
+      .shell {
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        margin-bottom: 28px;
+      }
+
+      .topbar {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 16px;
-        padding: 14px 16px;
+        padding: 16px 18px;
         border-bottom: 1px solid var(--line);
-      }
-
-      .controls {
-        display: flex;
-        gap: 8px;
         flex-wrap: wrap;
       }
 
-      .control {
+      .topbar strong { font-size: 15px; }
+      .status { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+
+      .controls { display: flex; gap: 8px; }
+
+      .btn {
         border: 1px solid var(--line);
-        border-radius: 6px;
-        background: #ffffff;
+        border-radius: 8px;
+        background: var(--panel);
         color: var(--ink);
-        min-width: 38px;
-        min-height: 34px;
-        padding: 8px 11px;
+        padding: 8px 14px;
+        font-size: 13px;
+        font-weight: 600;
         cursor: pointer;
-        font-weight: 700;
       }
 
-      .control.primary {
-        background: var(--blue);
-        border-color: var(--blue);
-        color: #ffffff;
-      }
-
-      .status-line {
-        color: var(--muted);
-        font-size: 14px;
-        margin: 0;
-      }
+      .btn:hover { border-color: var(--blue); }
+      .btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+      .btn.primary:hover { filter: brightness(1.05); }
 
       .stage {
-        position: relative;
         display: grid;
-        grid-template-columns: 1fr 80px 1fr;
+        grid-template-columns: 1fr 96px 1fr;
+        align-items: stretch;
         gap: 0;
-        min-height: 300px;
-        padding: 18px;
+        padding: 22px;
         background:
-          linear-gradient(90deg, rgba(23, 105, 224, 0.05), transparent 34%, transparent 66%, rgba(20, 125, 79, 0.05)),
-          #fbfcff;
+          radial-gradient(1200px 200px at 20% -20%, var(--blue-soft), transparent 60%),
+          radial-gradient(1200px 200px at 80% 120%, var(--green-soft), transparent 60%);
       }
 
       .node {
         border: 1px solid var(--line);
-        border-radius: 8px;
-        background: #ffffff;
-        padding: 14px;
-        box-shadow: 0 8px 24px rgba(21, 32, 50, 0.06);
+        border-radius: 10px;
+        background: var(--panel);
+        padding: 16px;
+        min-height: 240px;
       }
 
       .node h3 {
-        margin: 0 0 10px;
-        font-size: 16px;
+        margin: 0 0 12px;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted);
       }
 
-      .screen {
-        border: 1px solid #c9d4e4;
+      .browser {
+        border: 1px solid var(--line);
         border-radius: 8px;
-        padding: 14px;
-        background: #f8fbff;
+        overflow: hidden;
+        background: var(--panel-2);
       }
 
-      .field,
-      .button-demo {
-        height: 34px;
+      .browser-bar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--line); }
+      .browser-url {
+        margin-left: 8px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 11px;
+        color: var(--muted);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .browser-body { padding: 14px; }
+      .field {
+        height: 32px;
         border-radius: 6px;
-        border: 1px solid #b7c3d2;
-        background: #ffffff;
-        margin-top: 10px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        margin-bottom: 10px;
       }
 
-      .button-demo {
+      .submit {
+        height: 36px;
+        border-radius: 6px;
         display: grid;
         place-items: center;
-        background: #1769e0;
-        color: white;
+        background: var(--blue);
+        color: #fff;
         font-size: 13px;
         font-weight: 700;
-        transform-origin: center;
-        transition: transform 220ms ease, box-shadow 220ms ease;
-      }
-
-      .button-demo.healed {
-        transform: scale(1.04);
-        box-shadow: 0 0 0 6px rgba(20, 125, 79, 0.15);
-      }
-
-      .wire {
         position: relative;
-        display: grid;
-        place-items: center;
+        transition: box-shadow 240ms ease, transform 240ms ease, outline-color 240ms ease;
+        outline: 2px dashed transparent;
+        outline-offset: 3px;
       }
 
+      .submit.searching { outline-color: var(--red); }
+      .submit.healed {
+        box-shadow: 0 0 0 5px var(--green-soft);
+        outline-color: var(--green);
+        outline-style: solid;
+      }
+
+      .selector-chip {
+        display: inline-block;
+        margin-top: 12px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12px;
+        transition: color 200ms ease, border-color 200ms ease;
+      }
+
+      .selector-chip.broken { color: var(--red); border-color: var(--red); text-decoration: line-through; }
+      .selector-chip.fixed { color: var(--green); border-color: var(--green); text-decoration: none; }
+
+      .wire { position: relative; display: grid; place-items: center; }
       .wire::before {
         content: '';
         position: absolute;
         top: 50%;
-        left: 8px;
-        right: 8px;
-        height: 3px;
-        border-radius: 999px;
-        background: var(--line);
+        left: 4px;
+        right: 4px;
+        height: 2px;
+        background: repeating-linear-gradient(90deg, var(--line) 0 8px, transparent 8px 14px);
       }
-
       .packet {
         position: relative;
         z-index: 1;
-        width: 18px;
-        height: 18px;
+        width: 20px;
+        height: 20px;
         border-radius: 50%;
         background: var(--blue);
+        box-shadow: 0 0 0 6px color-mix(in srgb, var(--blue) 20%, transparent);
         opacity: 0;
-        transform: translateX(-32px);
+      }
+      .packet.forward { animation: packetForward 1100ms ease-in-out; }
+      .packet.back { background: var(--green); animation: packetBack 1100ms ease-in-out; }
+
+      .code {
+        margin: 0;
+        background: var(--code-bg);
+        color: var(--code-ink);
+        border-radius: 8px;
+        padding: 14px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12.5px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        min-height: 150px;
       }
 
-      .packet.moving {
-        animation: packetMove 1200ms ease-in-out forwards;
-      }
-
-      .code-stream {
-        min-height: 196px;
-        font-size: 13px;
-        line-height: 1.45;
-      }
-
-      .typing::after {
+      .caret::after {
         content: '';
         display: inline-block;
-        width: 8px;
-        height: 16px;
-        margin-left: 3px;
+        width: 7px;
+        height: 15px;
+        margin-left: 2px;
         background: var(--blue);
         vertical-align: text-bottom;
-        animation: blink 700ms steps(2, start) infinite;
+        animation: blink 900ms steps(2, start) infinite;
+      }
+
+      .log { display: grid; gap: 8px; }
+      .log-row {
+        display: flex;
+        gap: 8px;
+        align-items: baseline;
+        border-left: 3px solid var(--blue);
+        background: var(--panel-2);
+        border-radius: 0 6px 6px 0;
+        padding: 8px 10px;
+        font-size: 13px;
+        opacity: 0;
+        transform: translateY(6px);
+        animation: rise 240ms ease forwards;
+      }
+      .log-row.success { border-left-color: var(--green); }
+      .log-row .n {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 11px;
+        color: var(--muted);
       }
 
       .timeline {
         display: grid;
         grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 10px;
-        padding: 14px 16px 16px;
+        gap: 8px;
+        padding: 16px 18px;
         border-top: 1px solid var(--line);
       }
 
-      .timeline-step {
+      .tl-step {
         border: 1px solid var(--line);
         border-radius: 8px;
         padding: 10px;
-        background: #ffffff;
-        color: var(--muted);
-        transition: border-color 180ms ease, background 180ms ease, transform 180ms ease, color 180ms ease;
-      }
-
-      .timeline-step.active {
-        border-color: var(--blue);
-        background: #eef5ff;
-        color: var(--ink);
-        transform: translateY(-2px);
-      }
-
-      .timeline-step.done {
-        border-color: rgba(20, 125, 79, 0.45);
-        background: #eefaf4;
-        color: var(--green);
-      }
-
-      .event-log {
-        display: grid;
-        gap: 8px;
-        min-height: 172px;
-      }
-
-      .event-row {
-        border-left: 3px solid var(--blue);
-        padding: 8px 10px;
-        background: #f8fbff;
-        border-radius: 0 6px 6px 0;
-        font-size: 13px;
-        opacity: 0;
-        transform: translateY(6px);
-        animation: riseIn 220ms ease forwards;
-      }
-
-      .event-row.success {
-        border-left-color: var(--green);
-      }
-
-      .selector-chip {
-        display: inline-block;
-        padding: 3px 6px;
-        border: 1px solid var(--line);
-        border-radius: 5px;
-        background: #ffffff;
-        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      }
-
-      @keyframes packetMove {
-        0% {
-          opacity: 0;
-          transform: translateX(-32px) scale(0.8);
-        }
-        15% {
-          opacity: 1;
-        }
-        80% {
-          opacity: 1;
-          transform: translateX(32px) scale(1);
-        }
-        100% {
-          opacity: 0;
-          transform: translateX(42px) scale(0.8);
-        }
-      }
-
-      @keyframes blink {
-        50% {
-          opacity: 0;
-        }
-      }
-
-      @keyframes riseIn {
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .badge {
-        display: inline-block;
-        margin-bottom: 10px;
-        padding: 4px 8px;
-        border-radius: 999px;
         font-size: 12px;
+        color: var(--muted);
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+        transition: border-color 180ms ease, background 180ms ease, color 180ms ease, transform 180ms ease;
+      }
+
+      .tl-step .num {
+        flex: 0 0 20px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--line);
+        font-size: 11px;
         font-weight: 700;
       }
 
-      .badge.green {
-        background: #e8f5ef;
-        color: var(--green);
+      .tl-step.active { border-color: var(--blue); background: var(--blue-soft); color: var(--ink); transform: translateY(-2px); }
+      .tl-step.active .num { border-color: var(--blue); color: var(--blue); }
+      .tl-step.done { border-color: var(--green); color: var(--green); }
+      .tl-step.done .num { border-color: var(--green); background: var(--green); color: #fff; }
+
+      .roadmap { padding: 22px; }
+      .roadmap h3 { margin: 0 0 8px; }
+      .roadmap ul { margin: 0; padding-left: 18px; color: var(--muted); }
+      .roadmap li { margin-bottom: 6px; }
+
+      footer { color: var(--muted); font-size: 12px; padding: 8px 0 40px; }
+      footer code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        padding: 1px 5px;
       }
 
-      .badge.amber {
-        background: #fff3d6;
-        color: var(--amber);
+      @keyframes packetForward {
+        0% { opacity: 0; transform: translateX(-38px) scale(0.7); }
+        20% { opacity: 1; }
+        80% { opacity: 1; transform: translateX(38px) scale(1); }
+        100% { opacity: 0; transform: translateX(46px) scale(0.7); }
       }
+      @keyframes packetBack {
+        0% { opacity: 0; transform: translateX(38px) scale(0.7); }
+        20% { opacity: 1; }
+        80% { opacity: 1; transform: translateX(-38px) scale(1); }
+        100% { opacity: 0; transform: translateX(-46px) scale(0.7); }
+      }
+      @keyframes blink { 50% { opacity: 0; } }
+      @keyframes rise { to { opacity: 1; transform: translateY(0); } }
 
       @media (max-width: 820px) {
-        .grid,
-        .flow,
-        .stage,
-        .timeline {
-          grid-template-columns: 1fr;
-        }
-
-        .wire {
-          min-height: 44px;
-        }
-
-        .wire::before {
-          top: 8px;
-          bottom: 8px;
-          left: 50%;
-          right: auto;
-          width: 3px;
-          height: auto;
-        }
+        .summary { grid-template-columns: 1fr 1fr; }
+        .stage { grid-template-columns: 1fr; gap: 14px; }
+        .wire { min-height: 46px; }
+        .wire::before { left: 50%; right: auto; top: 6px; bottom: 6px; width: 2px; height: auto; background: repeating-linear-gradient(180deg, var(--line) 0 8px, transparent 8px 14px); }
+        .timeline { grid-template-columns: 1fr; }
+        @keyframes packetForward { 0% { opacity: 0; transform: translateY(-24px) scale(0.7); } 20% { opacity: 1; } 80% { opacity: 1; transform: translateY(24px) scale(1); } 100% { opacity: 0; } }
+        @keyframes packetBack { 0% { opacity: 0; transform: translateY(24px) scale(0.7); } 20% { opacity: 1; } 80% { opacity: 1; transform: translateY(-24px) scale(1); } 100% { opacity: 0; } }
       }
     </style>
   </head>
   <body>
-    <header>
-      <h1>Self-Healing Framework Visualizer</h1>
+    <button class="theme-toggle" type="button" id="theme-toggle" aria-label="Toggle color theme">🌗 Theme</button>
+
+    <header class="wrap">
+      <span class="eyebrow">TestMu SDET-1 · Task 3</span>
+      <h1>Self-Healing Locator Framework</h1>
       <p>
-        This page explains the iterative Task 3 approach. Version 1 is intentionally naive:
-        a broken locator fails first, the DOM is attached to an xAI request, and the returned
-        selector is validated before the test continues.
+        When a Playwright locator matches zero elements, the framework snapshots the interactive DOM,
+        asks xAI (Grok) for a repaired selector under a strict JSON schema, re-validates that selector
+        against the live page, and only then continues — attaching the whole trace to the test report.
+        This page animates that flow for the naive v1 helper and the centralized v2 service.
       </p>
     </header>
 
-    <main>
-      <div class="tabs" role="tablist" aria-label="Self-healing versions">
-        <button class="tab" role="tab" aria-selected="true" aria-controls="v1" id="tab-v1">v1 Naive</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="v2" id="tab-v2">v2 Centralized</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="v3" id="tab-v3">v3 Reporting</button>
+    <main class="wrap">
+      <div class="tabs" role="tablist" aria-label="Framework versions">
+        <button class="tab" role="tab" aria-selected="true" aria-controls="panel-v1" id="tab-v1">v1 · Naive helper</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v2" id="tab-v2">v2 · Centralized service</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v3" id="tab-v3">Roadmap</button>
       </div>
 
-      <section class="version" id="v1" role="tabpanel" aria-labelledby="tab-v1">
-        <div class="grid">
-          <article class="step">
-            <span class="badge amber">Step 1</span>
+      <!-- ================= V1 ================= -->
+      <section id="panel-v1" role="tabpanel" aria-labelledby="tab-v1">
+        <div class="summary">
+          <article class="card">
+            <span class="kicker amber">Trigger</span>
             <strong>Locator breaks</strong>
-            <code>#submit-login-button-does-not-exist</code>
+            <p><code>#submit-login-button-does-not-exist</code> matches 0 nodes.</p>
           </article>
-          <article class="step">
-            <span class="badge amber">Step 2</span>
-            <strong>DOM is attached</strong>
-            <p>Interactive controls are compacted into a readable snapshot.</p>
+          <article class="card">
+            <span class="kicker amber">Context</span>
+            <strong>DOM snapshot</strong>
+            <p>Interactive controls compacted into a compact, model-readable list.</p>
           </article>
-          <article class="step">
-            <span class="badge amber">Step 3</span>
-            <strong>xAI repairs</strong>
-            <p>The model returns a selector, confidence, and reason.</p>
+          <article class="card">
+            <span class="kicker blue">Repair</span>
+            <strong>xAI call</strong>
+            <p>Grok returns <code>{ selector, confidence, reason }</code> via json_schema.</p>
           </article>
-          <article class="step">
-            <span class="badge green">Step 4</span>
-            <strong>Test continues</strong>
-            <p>The selector is validated, clicked, logged, and attached to the test result.</p>
-          </article>
-        </div>
-
-        <div class="flow">
-          <article class="panel">
-            <h2>Prompt Payload</h2>
-            <pre>{
-  "brokenSelector": "#submit-login-button-does-not-exist",
-  "intent": "The primary submit button for the login form",
-  "domSnapshot": "1. parent=form#login-form &lt;button id=\"actual-login-submit\" data-testid=\"login-submit\"&gt; text=\"Sign in\""
-}</pre>
-          </article>
-          <article class="panel">
-            <h2>Expected Repair</h2>
-            <pre>{
-  "selector": "#actual-login-submit",
-  "confidence": 0.98,
-  "reason": "The button is the submit control inside the login form."
-}</pre>
+          <article class="card">
+            <span class="kicker green">Guard</span>
+            <strong>Re-validate</strong>
+            <p>Suggested selector must match before the click runs.</p>
           </article>
         </div>
 
-        <div class="workflow-shell" data-workflow="v1">
-          <div class="workflow-topbar">
+        <div class="shell" data-flow="v1">
+          <div class="topbar">
             <div>
-              <strong>Live v1 workflow playback</strong>
-              <p class="status-line" data-status>Ready to run the naive healing flow.</p>
+              <strong>Live v1 workflow — NaiveSelfHealingLocator</strong>
+              <p class="status" data-status>Ready. Press Play to run the naive healing flow.</p>
             </div>
             <div class="controls">
-              <button class="control primary" type="button" data-action="play">Play</button>
-              <button class="control" type="button" data-action="step">Step</button>
-              <button class="control" type="button" data-action="reset">Reset</button>
+              <button class="btn primary" type="button" data-action="play">▶ Play</button>
+              <button class="btn" type="button" data-action="step">Step</button>
+              <button class="btn" type="button" data-action="reset">Reset</button>
             </div>
           </div>
 
           <div class="stage">
             <article class="node">
-              <h3>Playwright test</h3>
-              <div class="screen">
-                <span class="selector-chip" data-broken-selector>#submit-login-button-does-not-exist</span>
-                <div class="field"></div>
-                <div class="field"></div>
-                <div class="button-demo" data-demo-button>Sign in</div>
+              <h3>Playwright test — /demo/login.html</h3>
+              <div class="browser">
+                <div class="browser-bar" aria-hidden="true">
+                  <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                  <span class="browser-url">127.0.0.1:9323/demo/login.html</span>
+                </div>
+                <div class="browser-body">
+                  <div class="field"></div>
+                  <div class="field"></div>
+                  <div class="submit" data-submit>Sign in</div>
+                </div>
               </div>
+              <span class="selector-chip" data-chip>#submit-login-button-does-not-exist</span>
             </article>
 
-            <div class="wire" aria-hidden="true">
-              <span class="packet" data-packet></span>
-            </div>
+            <div class="wire" aria-hidden="true"><span class="packet" data-packet></span></div>
 
             <article class="node">
-              <h3>xAI repair response</h3>
-              <pre class="code-stream" data-code>{
+              <h3>xAI selector repair (Grok)</h3>
+              <pre class="code" data-code>{
   "selector": null,
   "confidence": 0,
-  "reason": "Waiting..."
+  "reason": "waiting…"
 }</pre>
             </article>
           </div>
 
-          <div class="timeline" data-timeline>
-            <div class="timeline-step">1. Broken locator fails</div>
-            <div class="timeline-step">2. DOM snapshot captured</div>
-            <div class="timeline-step">3. xAI request sent</div>
-            <div class="timeline-step">4. Selector validated</div>
-            <div class="timeline-step">5. Test continues</div>
-          </div>
+          <div class="timeline" data-timeline></div>
         </div>
       </section>
 
-      <section class="version" id="v2" role="tabpanel" aria-labelledby="tab-v2" hidden>
-        <div class="grid">
-          <article class="step">
-            <span class="badge green">Framework</span>
-            <strong>Shared service</strong>
-            <p><code>SelfHealingService</code> owns DOM capture, xAI repair, validation, and logging.</p>
+      <!-- ================= V2 ================= -->
+      <section id="panel-v2" role="tabpanel" aria-labelledby="tab-v2" hidden>
+        <div class="summary">
+          <article class="card">
+            <span class="kicker green">Framework</span>
+            <strong>SelfHealingService</strong>
+            <p>Owns DOM capture, xAI repair, re-validation and JSONL audit logging.</p>
           </article>
-          <article class="step">
-            <span class="badge green">Fixture</span>
+          <article class="card">
+            <span class="kicker green">Fixture</span>
             <strong>One test API</strong>
-            <p>Tests import <code>healing</code> from a Playwright fixture instead of creating helpers manually.</p>
+            <p>Tests call <code>healing.locator(selector, intent)</code> — no helper wiring.</p>
           </article>
-          <article class="step">
-            <span class="badge green">Evidence</span>
-            <strong>Central attachment</strong>
-            <p>Heal events are attached to Playwright output from the fixture after the test completes.</p>
+          <article class="card">
+            <span class="kicker green">Evidence</span>
+            <strong>Attached centrally</strong>
+            <p>Heal events flow to the Playwright report from one code path.</p>
           </article>
-          <article class="step">
-            <span class="badge amber">Next</span>
-            <strong>Guardrails later</strong>
-            <p>Confidence gates, cache validation, and refusal rules are planned for the next version.</p>
-          </article>
-        </div>
-
-        <div class="flow">
-          <article class="panel">
-            <h2>Test Code</h2>
-            <pre>const loginButton = await healing.locator(
-  '#submit-login-button-does-not-exist',
-  'The primary submit button for the login form',
-);</pre>
-          </article>
-          <article class="panel">
-            <h2>Centralized Output</h2>
-            <pre>{
-  "selector": "#actual-login-submit",
-  "source": "xai",
-  "version": "v2-centralized"
-}</pre>
+          <article class="card">
+            <span class="kicker blue">Audit</span>
+            <strong>heal-log.v2.jsonl</strong>
+            <p>Every repair is appended for later drift analysis.</p>
           </article>
         </div>
 
-        <div class="workflow-shell" data-workflow="v2">
-          <div class="workflow-topbar">
+        <div class="shell" data-flow="v2">
+          <div class="topbar">
             <div>
-              <strong>Centralized framework playback</strong>
-              <p class="status-line" data-status>Fixture is ready; one API owns the healing lifecycle.</p>
+              <strong>Centralized playback — SelfHealingService + healing fixture</strong>
+              <p class="status" data-status>Ready. The fixture owns the full healing lifecycle.</p>
             </div>
             <div class="controls">
-              <button class="control primary" type="button" data-action="play">Play</button>
-              <button class="control" type="button" data-action="step">Step</button>
-              <button class="control" type="button" data-action="reset">Reset</button>
+              <button class="btn primary" type="button" data-action="play">▶ Play</button>
+              <button class="btn" type="button" data-action="step">Step</button>
+              <button class="btn" type="button" data-action="reset">Reset</button>
             </div>
           </div>
 
           <div class="stage">
             <article class="node">
               <h3>Test intent</h3>
-              <pre class="code-stream">await healing.locator(
+              <pre class="code">const btn = await healing.locator(
   '#submit-login-button-does-not-exist',
-  'The primary submit button'
-);</pre>
+  'The primary submit button for the login form',
+);
+await btn.click();</pre>
+              <span class="selector-chip" data-chip>#submit-login-button-does-not-exist</span>
             </article>
 
-            <div class="wire" aria-hidden="true">
-              <span class="packet" data-packet></span>
-            </div>
+            <div class="wire" aria-hidden="true"><span class="packet" data-packet></span></div>
 
             <article class="node">
               <h3>Framework event log</h3>
-              <div class="event-log" data-log></div>
+              <div class="log" data-log></div>
             </article>
           </div>
 
-          <div class="timeline" data-timeline>
-            <div class="timeline-step">1. Fixture receives intent</div>
-            <div class="timeline-step">2. Service captures DOM</div>
-            <div class="timeline-step">3. xAI returns repair</div>
-            <div class="timeline-step">4. Fixture attaches evidence</div>
-            <div class="timeline-step">5. Audit log updated</div>
-          </div>
+          <div class="timeline" data-timeline></div>
         </div>
       </section>
 
-      <section class="version" id="v3" role="tabpanel" aria-labelledby="tab-v3" hidden>
-        <article class="panel">
-          <h2>Planned v3</h2>
-          <p>Attach heal timelines to HTML reports and trend selector drift across runs.</p>
-        </article>
+      <!-- ================= ROADMAP ================= -->
+      <section id="panel-v3" role="tabpanel" aria-labelledby="tab-v3" hidden>
+        <div class="shell">
+          <div class="roadmap">
+            <h3>What v3 adds next</h3>
+            <ul>
+              <li><strong>Confidence gate:</strong> refuse to heal below a threshold and fail loudly instead of clicking a guessed element.</li>
+              <li><strong>Selector cache:</strong> remember a repair per <code>(url, intent)</code> so the model is called once, not every run.</li>
+              <li><strong>Refusal rules:</strong> never heal destructive actions (delete, pay, submit-order) without an explicit allow-list.</li>
+              <li><strong>Report trends:</strong> attach heal timelines to the HTML report and chart selector drift across runs.</li>
+            </ul>
+          </div>
+        </div>
       </section>
     </main>
 
+    <footer class="wrap">
+      Served locally via <code>npm run serve:demo</code> → <code>http://127.0.0.1:9323/self-healing-visualizer.html</code>.
+      Real code: <code>src/agents/self-healing/NaiveSelfHealingLocator.ts</code>,
+      <code>src/framework/self-healing/SelfHealingService.ts</code>, <code>src/ai/XaiClient.ts</code>.
+    </footer>
+
     <script>
-      const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
-      const panels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
-      const workflowTimers = new WeakMap();
+      // ---- Theme toggle -------------------------------------------------
+      const root = document.documentElement;
+      document.getElementById('theme-toggle').addEventListener('click', () => {
+        const current = root.getAttribute('data-theme')
+          || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        root.setAttribute('data-theme', current === 'dark' ? 'light' : 'dark');
+      });
 
-      const workflows = {
-        v1: [
-          {
-            status: 'Original locator matched 0 elements.',
-            code: '{\n  "brokenSelector": "#submit-login-button-does-not-exist",\n  "matchCount": 0\n}',
-            log: 'Broken selector detected.',
-          },
-          {
-            status: 'Interactive DOM snapshot captured from the login page.',
-            code: '{\n  "domSnapshot": "form#login-form > button#actual-login-submit",\n  "intent": "primary submit button"\n}',
-            log: 'DOM context attached to repair request.',
-          },
-          {
-            status: 'Request sent to xAI with selector intent and DOM context.',
-            code: '{\n  "model": "grok-4.3",\n  "response_format": "json_schema"\n}',
-            log: 'xAI request in flight.',
-            packet: true,
-          },
-          {
-            status: 'Returned selector validated against the current page.',
-            code: '{\n  "selector": "#actual-login-submit",\n  "confidence": 0.95,\n  "reason": "Stable id on submit button"\n}',
-            log: 'Suggested selector matched the DOM.',
-          },
-          {
-            status: 'The test clicks the healed selector and continues.',
-            code: '{\n  "result": "Login submitted",\n  "source": "xai"\n}',
-            log: 'Workflow completed.',
-            healed: true,
-          },
-        ],
-        v2: [
-          { status: 'The shared fixture receives healing intent from the test.', log: 'healing.locator(...) called.' },
-          { status: 'SelfHealingService captures DOM and builds the repair payload.', log: 'Service owns DOM snapshot capture.' },
-          { status: 'xAI returns a structured selector repair.', log: 'selector=#actual-login-submit confidence=0.95', packet: true },
-          { status: 'The fixture attaches healing events to the Playwright result.', log: 'self-healing-events attachment added.' },
-          { status: 'The audit log is updated from one central framework path.', log: 'heal-log.v2.jsonl updated.', healed: true },
-        ],
-      };
-
+      // ---- Tabs ---------------------------------------------------------
+      const tabs = [...document.querySelectorAll('[role="tab"]')];
+      const panels = [...document.querySelectorAll('[role="tabpanel"]')];
       tabs.forEach((tab) => {
         tab.addEventListener('click', () => {
-          tabs.forEach((item) => item.setAttribute('aria-selected', String(item === tab)));
-          panels.forEach((panel) => {
-            panel.hidden = panel.id !== tab.getAttribute('aria-controls');
-          });
-          const panel = document.getElementById(tab.getAttribute('aria-controls'));
-          const workflow = panel?.querySelector('[data-workflow]');
-          if (workflow) resetWorkflow(workflow);
+          tabs.forEach((t) => t.setAttribute('aria-selected', String(t === tab)));
+          panels.forEach((p) => { p.hidden = p.id !== tab.getAttribute('aria-controls'); });
+          const flow = document.getElementById(tab.getAttribute('aria-controls'))?.querySelector('[data-flow]');
+          if (flow) reset(flow);
         });
       });
 
-      function setStep(workflow, index) {
-        const id = workflow.getAttribute('data-workflow');
-        const steps = workflows[id];
-        const step = steps[index];
-        if (!step) return;
+      // ---- Step data ----------------------------------------------------
+      const STEPS = {
+        v1: [
+          { label: 'Broken locator fails', status: 'page.locator("#submit-login-button-does-not-exist") matched 0 elements.',
+            chip: 'broken', code: '{\n  "brokenSelector": "#submit-login-button-does-not-exist",\n  "matchCount": 0\n}' },
+          { label: 'DOM snapshot captured', status: 'captureInteractiveDom() compacts the page\'s interactive controls.',
+            code: '{\n  "domSnapshot": "form#login-form > button#actual-login-submit \\"Sign in\\"",\n  "intent": "The primary submit button for the login form",\n  "url": "/demo/login.html"\n}' },
+          { label: 'xAI request sent', status: 'POST api.x.ai/v1/chat/completions — temperature 0, strict json_schema.',
+            packet: 'forward', code: '{\n  "model": "grok-4.3",\n  "temperature": 0,\n  "response_format": { "type": "json_schema", "name": "selector_repair" }\n}' },
+          { label: 'Selector re-validated', status: 'Suggested selector matched the live DOM — repair accepted.',
+            packet: 'back', code: '{\n  "selector": "#actual-login-submit",\n  "confidence": 0.95,\n  "reason": "Stable id on the only submit button in the login form"\n}' },
+          { label: 'Test continues', status: 'Healed locator clicked; heal attached to the test result and heal-log.v1.jsonl.',
+            healed: true, code: '{\n  "result": "Login submitted",\n  "source": "xai",\n  "attachment": "self-healing-v1"\n}' },
+        ],
+        v2: [
+          { label: 'Fixture receives intent', status: 'Test calls healing.locator(selector, intent) — no helper is built by hand.',
+            chip: 'broken', log: 'healing.locator("#submit-login-button-does-not-exist", "primary submit button")' },
+          { label: 'Service captures DOM', status: 'SelfHealingService detects 0 matches and snapshots the interactive DOM.',
+            log: 'count === 0 → captureInteractiveDom(page)' },
+          { label: 'xAI returns repair', status: 'XaiClient.repairSelector() returns a schema-validated selector.',
+            packet: 'forward', log: 'xai → { selector: "#actual-login-submit", confidence: 0.95 }' },
+          { label: 'Fixture attaches evidence', status: 'Heal events are attached to the Playwright result from one central path.',
+            packet: 'back', log: 'testInfo.attach("self-healing-events", events)' },
+          { label: 'Audit log updated', status: 'The repair is appended to heal-log.v2.jsonl for drift analysis.',
+            healed: true, log: 'append → heal-log.v2.jsonl' },
+        ],
+      };
 
-        workflow.dataset.step = String(index);
-        workflow.querySelector('[data-status]').textContent = step.status;
-        workflow.querySelectorAll('.timeline-step').forEach((item, itemIndex) => {
-          item.classList.toggle('active', itemIndex === index);
-          item.classList.toggle('done', itemIndex < index || (step.healed && itemIndex === index));
+      const timers = new WeakMap();
+
+      function buildTimeline(flow) {
+        const id = flow.dataset.flow;
+        const tl = flow.querySelector('[data-timeline]');
+        tl.innerHTML = '';
+        STEPS[id].forEach((s, i) => {
+          const el = document.createElement('div');
+          el.className = 'tl-step';
+          el.innerHTML = `<span class="num">${i + 1}</span><span>${s.label}</span>`;
+          tl.appendChild(el);
+        });
+      }
+
+      function render(flow, index) {
+        const id = flow.dataset.flow;
+        const step = STEPS[id][index];
+        if (!step) return;
+        flow.dataset.step = String(index);
+
+        flow.querySelector('[data-status]').textContent = step.status;
+
+        flow.querySelectorAll('.tl-step').forEach((el, i) => {
+          el.classList.toggle('active', i === index);
+          el.classList.toggle('done', i < index || (step.healed && i === index));
         });
 
-        const code = workflow.querySelector('[data-code]');
+        const code = flow.querySelector('[data-code]');
         if (code && step.code) {
           code.textContent = step.code;
-          code.classList.add('typing');
-          window.setTimeout(() => code.classList.remove('typing'), 500);
+          code.classList.add('caret');
+          setTimeout(() => code.classList.remove('caret'), 450);
         }
 
-        const packet = workflow.querySelector('[data-packet]');
+        const chip = flow.querySelector('[data-chip]');
+        if (chip) {
+          if (step.chip === 'broken') { chip.classList.add('broken'); chip.classList.remove('fixed'); }
+          if (step.healed) { chip.classList.remove('broken'); chip.classList.add('fixed'); chip.textContent = '#actual-login-submit'; }
+        }
+
+        const submit = flow.querySelector('[data-submit]');
+        if (submit) {
+          submit.classList.toggle('searching', step.chip === 'broken');
+          if (step.healed) { submit.classList.remove('searching'); submit.classList.add('healed'); }
+        }
+
+        const packet = flow.querySelector('[data-packet]');
         if (packet && step.packet) {
-          packet.classList.remove('moving');
+          packet.classList.remove('forward', 'back');
           void packet.offsetWidth;
-          packet.classList.add('moving');
+          packet.classList.add(step.packet);
         }
 
-        const button = workflow.querySelector('[data-demo-button]');
-        if (button) button.classList.toggle('healed', Boolean(step.healed));
-
-        const log = workflow.querySelector('[data-log]');
+        const log = flow.querySelector('[data-log]');
         if (log && step.log) {
           const row = document.createElement('div');
-          row.className = `event-row${step.healed ? ' success' : ''}`;
-          row.textContent = step.log;
+          row.className = 'log-row' + (step.healed ? ' success' : '');
+          row.innerHTML = `<span class="n">${index + 1}</span><span>${step.log}</span>`;
           log.appendChild(row);
         }
       }
 
-      function resetWorkflow(workflow) {
-        window.clearInterval(workflowTimers.get(workflow));
-        workflow.dataset.step = '-1';
-        workflow.querySelector('[data-status]').textContent =
-          workflow.getAttribute('data-workflow') === 'v2'
-            ? 'Fixture is ready; one API owns the healing lifecycle.'
-            : 'Ready to run the naive healing flow.';
-        workflow.querySelectorAll('.timeline-step').forEach((item) => {
-          item.classList.remove('active', 'done');
-        });
-        const log = workflow.querySelector('[data-log]');
-        if (log) log.textContent = '';
-        const code = workflow.querySelector('[data-code]');
-        if (code) {
-          code.textContent = '{\n  "selector": null,\n  "confidence": 0,\n  "reason": "Waiting..."\n}';
-        }
-        const button = workflow.querySelector('[data-demo-button]');
-        if (button) button.classList.remove('healed');
+      function reset(flow) {
+        clearInterval(timers.get(flow));
+        flow.dataset.step = '-1';
+        const id = flow.dataset.flow;
+        flow.querySelector('[data-status]').textContent =
+          id === 'v2' ? 'Ready. The fixture owns the full healing lifecycle.'
+                      : 'Ready. Press Play to run the naive healing flow.';
+        flow.querySelectorAll('.tl-step').forEach((el) => el.classList.remove('active', 'done'));
+
+        const code = flow.querySelector('[data-code]');
+        if (code) { code.textContent = '{\n  "selector": null,\n  "confidence": 0,\n  "reason": "waiting…"\n}'; code.classList.remove('caret'); }
+
+        const chip = flow.querySelector('[data-chip]');
+        if (chip) { chip.classList.remove('broken', 'fixed'); chip.textContent = '#submit-login-button-does-not-exist'; }
+
+        const submit = flow.querySelector('[data-submit]');
+        if (submit) submit.classList.remove('searching', 'healed');
+
+        const log = flow.querySelector('[data-log]');
+        if (log) log.innerHTML = '';
       }
 
-      function stepWorkflow(workflow) {
-        const id = workflow.getAttribute('data-workflow');
-        const current = Number(workflow.dataset.step ?? '-1');
-        const next = current + 1 >= workflows[id].length ? 0 : current + 1;
-        if (next === 0) resetWorkflow(workflow);
-        setStep(workflow, next);
+      function step(flow) {
+        const len = STEPS[flow.dataset.flow].length;
+        const current = Number(flow.dataset.step ?? '-1');
+        const next = current + 1;
+        if (next >= len) { reset(flow); return; }
+        if (next === 0) reset(flow);
+        render(flow, next);
       }
 
-      function playWorkflow(workflow) {
-        resetWorkflow(workflow);
-        setStep(workflow, 0);
-        let index = 1;
-        const timer = window.setInterval(() => {
-          setStep(workflow, index);
-          index += 1;
-          if (index >= workflows[workflow.getAttribute('data-workflow')].length) {
-            window.clearInterval(timer);
-          }
-        }, 1050);
-        workflowTimers.set(workflow, timer);
+      function play(flow) {
+        reset(flow);
+        render(flow, 0);
+        let i = 1;
+        const len = STEPS[flow.dataset.flow].length;
+        const timer = setInterval(() => {
+          if (i >= len) { clearInterval(timer); return; }
+          render(flow, i);
+          i += 1;
+        }, 1150);
+        timers.set(flow, timer);
       }
 
-      document.querySelectorAll('[data-workflow]').forEach((workflow) => {
-        resetWorkflow(workflow);
-        workflow.querySelector('[data-action="play"]').addEventListener('click', () => playWorkflow(workflow));
-        workflow.querySelector('[data-action="step"]').addEventListener('click', () => stepWorkflow(workflow));
-        workflow.querySelector('[data-action="reset"]').addEventListener('click', () => resetWorkflow(workflow));
+      document.querySelectorAll('[data-flow]').forEach((flow) => {
+        buildTimeline(flow);
+        reset(flow);
+        flow.querySelector('[data-action="play"]').addEventListener('click', () => play(flow));
+        flow.querySelector('[data-action="step"]').addEventListener('click', () => step(flow));
+        flow.querySelector('[data-action="reset"]').addEventListener('click', () => reset(flow));
       });
     </script>
   </body>
