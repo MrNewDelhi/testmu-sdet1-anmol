@@ -79,6 +79,7 @@ The self-healing framework evolves across six versions, each with a visualizer t
 | v6 | Multi-locator cache (survive single-attribute drift) | `npm run test:self-healing:v6` |
 | v7 | Failure Explainer (Task 3 Option A) — analyze failures, attach to report | `npm run test:self-healing:v7` |
 | v8 | Screenshot attached to the failure request (multimodal) | `npm run test:self-healing:v7` (now sends a screenshot) |
+| v9 | Mode B — batched post-run analysis, deduped + enriched with history/git | `npm run test:self-healing:v9` |
 
 Run every version plus the framework unit tests with `npm run test:self-healing`. Open the animated version tabs with `npm run serve:demo`.
 
@@ -92,7 +93,12 @@ This is the assignment's core Task 3 deliverable: a real xAI call wired into the
 - `npm run test:self-healing:v7` runs a deliberately-failing demo (expected to fail) with a custom `FailureAnalysisReporter` that writes `playwright-report/failure-analysis.html` + `.json`. A committed sample is at `sample-output/failure-analysis.json`.
 - The always-green `tests/framework/failure-explainer.spec.ts` exercises the real xAI call on a simulated failure so CI covers the integration without a red test.
 - **v8 (multimodal):** the fixture also captures a page screenshot and sends it as an `image_url` content part, so the model sees the actual render (overlays, spinners, layout breakage), not just the DOM text. Uses `XAI_VISION_MODEL` (defaults to `XAI_MODEL`); the live call is covered by `tests/framework/failure-explainer-vision.spec.ts`. Note: a screenshot sharpens the *description* but cannot resolve product-intent ambiguity (whether a missing feature is supposed to exist) — that needs run history / spec, which is mode B's job.
-- Next (mode B): move the LLM call to a post-run reporter to batch and dedup failures across the whole run, enriched with run history and the git diff.
+**v9 (mode B)** moves the LLM call out of the fixture and into a post-run reporter (`BatchedFailureAnalysisReporter`). The fixture only stashes the raw failure context; after the run the reporter:
+- **dedups** failures by error signature (a cascade of N tests with one root cause becomes one call, and the cascade size becomes a signal);
+- **enriches** each group with the test's **previous-run status** (persisted across runs), whether its **file was recently changed** (git), and the run's changed files;
+- feeds those as priors so the classification is grounded, not guessed.
+
+Run `npm run test:self-healing:v9` (mode B; `FAILURE_ANALYSIS_MODE=b`). In the demo this is visible: a newly-added test file is classified **test-bug** (git shows it just changed), while an unchanged committed test failing the same way stays **product-bug** — the exact `product-bug`/`test-bug` gap from v7/v8, now resolved by context.
 
 - Task 3 remaining: v7 mode B (batched post-run reporter), destructive-action refusal allow-list, and heal-trend reporting.
 - Task 3 final: publish sample output and reporting artifacts.

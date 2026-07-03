@@ -9,13 +9,18 @@ import { defineConfig, devices } from '@playwright/test';
  * playwright-report/failure-analysis.html from the xAI explanation attached by
  * the failureAnalysis fixture. Kept separate so `npm test` stays green.
  */
+// mode A (default) analyzes per test; mode B batches + enriches after the run.
+const reporterModule = process.env.FAILURE_ANALYSIS_MODE === 'b'
+  ? './src/reporters/BatchedFailureAnalysisReporter.ts'
+  : './src/reporters/FailureAnalysisReporter.ts';
+
 export default defineConfig({
   testDir: './tests/failure-demo',
   timeout: 30_000,
   retries: 0,
   reporter: [
     ['list'],
-    ['./src/reporters/FailureAnalysisReporter.ts'],
+    [reporterModule],
   ],
   use: {
     baseURL: process.env.BASE_URL ?? 'http://127.0.0.1:9323',

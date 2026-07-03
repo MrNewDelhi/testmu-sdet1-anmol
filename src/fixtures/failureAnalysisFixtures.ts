@@ -4,18 +4,21 @@ import { captureInteractiveDom } from '../agents/self-healing/DomSnapshot.js';
 import { FailureExplainer } from '../framework/failure-analysis/FailureExplainer.js';
 
 /**
- * Auto-fixture that runs the Failure Explainer (v7).
+ * Auto-fixture for the Failure Explainer.
  *
- * Trigger discipline (the decisions that matter):
- * - Only on a genuine failure, and only on the FINAL retry — analyzing an
- *   earlier failed attempt of a test that later passes would spend tokens
- *   explaining a non-failure and produce a misleading report.
- * - Deduped by error signature and capped by a per-run budget, so one root
- *   cause failing many tests does not fan out into many identical LLM calls.
- * - Skipped gracefully when XAI_API_KEY is absent (a note is still attached).
+ * Two modes (FAILURE_ANALYSIS_MODE):
+ * - mode A (default): analyze at failure time and attach the explanation. Live
+ *   page state, simplest, per-test.
+ * - mode B ('b'): only capture and attach the raw failure context; the LLM call
+ *   is deferred to BatchedFailureAnalysisReporter, which batches + dedups all
+ *   final failures across the run and enriches them with history + git diff.
+ *
+ * Trigger discipline (both modes): only on a genuine failure, only on the FINAL
+ * retry — analyzing an earlier failed attempt of a test that later passes would
+ * spend tokens explaining a non-failure.
  */
 
-// Shared across tests in a worker process.
+// Shared across tests in a worker process (mode A budget/dedup).
 const analyzedSignatures = new Set<string>();
 let analysisBudget = Number(process.env.FAILURE_ANALYSIS_BUDGET ?? 5);
 
@@ -30,37 +33,22 @@ export const test = base.extend<{ failureAnalysis: void }>({
         && testInfo.retry === testInfo.project.retries;
       if (!isFinalFailure) return;
 
-      if (!env.xaiApiKey) {
-        await testInfo.attach('failure-analysis', {
-          body: 'Skipped: XAI_API_KEY not set.',
-          contentType: 'text/plain',
-        });
-        return;
-      }
-
-      const signature = `${testInfo.titlePath.join(' > ')}::${(testInfo.error?.message ?? '').slice(0, 120)}`;
-      if (analyzedSignatures.has(signature) || analysisBudget <= 0) return;
-      analyzedSignatures.add(signature);
-      analysisBudget -= 1;
-
+      // Context capture (both modes need it).
       let domSnapshot = '';
       try {
         domSnapshot = await captureInteractiveDom(page);
       } catch {
         // Page may be closed/navigated; analysis still runs on the error alone.
       }
-
-      // v8: a screenshot of the page at failure time, so the model can see what
-      // the page actually looked like, not just the DOM text.
       let screenshotBase64: string | undefined;
       try {
         screenshotBase64 = (await page.screenshot()).toString('base64');
       } catch {
         // No live page (e.g. API test) — analysis proceeds without an image.
       }
-
       const context = {
         title: testInfo.titlePath.join(' > '),
+        file: testInfo.file,
         error: [testInfo.error?.message, testInfo.error?.stack].filter(Boolean).join('\n'),
         url: (() => {
           try {
@@ -73,16 +61,34 @@ export const test = base.extend<{ failureAnalysis: void }>({
         screenshotBase64,
       };
 
+      // Mode B: defer the LLM call to the post-run reporter.
+      if (process.env.FAILURE_ANALYSIS_MODE === 'b') {
+        await testInfo.attach('failure-context', {
+          body: JSON.stringify(context),
+          contentType: 'application/json',
+        });
+        return;
+      }
+
+      // Mode A: analyze now.
+      if (!env.xaiApiKey) {
+        await testInfo.attach('failure-analysis', {
+          body: 'Skipped: XAI_API_KEY not set.',
+          contentType: 'text/plain',
+        });
+        return;
+      }
+
+      const signature = `${context.title}::${(testInfo.error?.message ?? '').slice(0, 120)}`;
+      if (analyzedSignatures.has(signature) || analysisBudget <= 0) return;
+      analyzedSignatures.add(signature);
+      analysisBudget -= 1;
+
       try {
         const analysis = await new FailureExplainer().explain(context);
         await testInfo.attach('failure-analysis', {
           body: JSON.stringify(
-            {
-              test: context.title,
-              url: context.url,
-              error: context.error.slice(0, 600),
-              analysis,
-            },
+            { test: context.title, url: context.url, error: context.error.slice(0, 600), analysis },
             null,
             2,
           ),

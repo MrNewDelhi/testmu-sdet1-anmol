@@ -67,7 +67,8 @@
 - [x] Add a custom FailureAnalysisReporter writing playwright-report/failure-analysis.html + .json, a v7 demo/script, a v7 visualizer tab, and a sample output.
 - [x] Add v8: attach a page screenshot to the failure request (multimodal xAI call) with a configurable vision model, plus a green live-vision integration test.
 - [x] Log every xAI API call (latency/status/tokens/errors, hasScreenshot) to xai-calls.jsonl for debugging and cost tracking.
-- [ ] v7 mode B: move the LLM call to a post-run reporter (batch all final failures, dedup by error signature, enrich with run history + git diff to sharpen classification).
+- [x] v9 (mode B): move the LLM call to a post-run reporter — batch/dedup final failures by signature and enrich each with prior-run status (persisted), git-changed-files, and cascade size; verified the git signal flips a newly-changed test from product-bug to test-bug.
+- [ ] v10: for API-level failures, capture and send the raw request and response to the failure analysis.
 - [ ] Add a destructive-action refusal allow-list (delete/pay/submit-order) on top of the contract.
 - [ ] Add a code comment explaining why the final Task 3 option was selected over the other assignment option.
 - [x] Attach or output the LLM response inside v1 test results.

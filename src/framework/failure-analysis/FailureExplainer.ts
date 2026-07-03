@@ -29,6 +29,10 @@ export class FailureExplainer {
       domSnapshot: context.domSnapshot.slice(0, 4000),
       apiResponse: context.apiResponse?.slice(0, 2000),
       screenshotBase64: context.screenshotBase64,
+      priorStatus: context.priorStatus,
+      testFileChanged: context.testFileChanged,
+      changedFiles: context.changedFiles,
+      cascadeCount: context.cascadeCount,
     });
   }
 }

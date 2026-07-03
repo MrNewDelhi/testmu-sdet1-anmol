@@ -45,6 +45,15 @@ export interface FailureAnalysisRequest {
   apiResponse?: string;
   /** Optional base64 PNG of the page at failure time (v8, multimodal). */
   screenshotBase64?: string;
+  // --- v9 mode-B enrichment (post-run reporter) ---
+  /** This test's status on the previous run: helps separate new vs persistent failures. */
+  priorStatus?: 'passed' | 'failed' | 'unknown';
+  /** Whether the failing test's own file was recently changed (git). */
+  testFileChanged?: boolean;
+  /** Recently changed files in the repo (git diff), capped. */
+  changedFiles?: string[];
+  /** How many tests failed with this same error signature (cascade signal). */
+  cascadeCount?: number;
 }
 
 export interface FailureAnalysisResponse {
@@ -114,7 +123,12 @@ export class XaiClient {
             + 'page state, an optional screenshot of the page, and any API response, explain in plain '
             + 'English what broke and suggest a concrete fix. Classify the failure as exactly one of: '
             + 'product-bug (a real defect in the app), environment (infra/network/config), flaky '
-            + '(timing/nondeterminism), or test-bug (the test/assertion is wrong). Be specific and concise.',
+            + '(timing/nondeterminism), or test-bug (the test/assertion is wrong). '
+            + 'Use these signals as priors when present: priorStatus (if it passed recently and now '
+            + 'fails, prefer product-bug/environment over test-bug); testFileChanged (if the test file '
+            + 'was just changed and the page looks stable, prefer test-bug); cascadeCount (many tests '
+            + 'failing identically suggests environment/setup); changedFiles (what changed recently). '
+            + 'Be specific and concise.',
         },
         { role: 'user', content: userContent },
       ],

@@ -521,6 +521,7 @@
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v6" id="tab-v6">v6 · Multi-locator</button>
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v7" id="tab-v7">v7 · Failure Explainer</button>
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v8" id="tab-v8">v8 · Screenshot (vision)</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v9" id="tab-v9">v9 · Batched + enriched</button>
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-roadmap" id="tab-roadmap">Roadmap</button>
       </div>
 
@@ -900,6 +901,52 @@ drift     -> cached selector fails  -> re-heal</pre>
         </div>
       </section>
 
+      <!-- ================= V9 ================= -->
+      <section id="panel-v9" role="tabpanel" aria-labelledby="tab-v9" hidden>
+        <div class="summary">
+          <article class="card"><span class="kicker blue">When</span><strong>After the run</strong><p>The fixture stashes context; the reporter calls xAI once, post-run.</p></article>
+          <article class="card"><span class="kicker green">Dedup</span><strong>Group cascades</strong><p>Failures with the same signature collapse to one call.</p></article>
+          <article class="card"><span class="kicker green">Enrich</span><strong>History + git</strong><p>Prior-run status, whether the test file changed, and cascade size.</p></article>
+          <article class="card"><span class="kicker green">Result</span><strong>Grounded category</strong><p>The classification stops guessing and uses evidence.</p></article>
+        </div>
+
+        <div class="shell">
+          <div class="topbar">
+            <div>
+              <strong>Mode B — the enrichment closes the "context gap" from v7/v8</strong>
+              <p class="status">Same failure, different verdict once the model knows what changed.</p>
+            </div>
+          </div>
+          <div class="stage" style="grid-template-columns: 1fr;">
+            <div>
+              <pre class="code">3 failures  ->  dedup by signature  ->  2 groups  ->  2 xAI calls</pre>
+              <div class="candidates">
+                <div class="candidate fail">
+                  <div class="cand-mark">1</div>
+                  <div class="cand-body" style="width:100%">
+                    <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+                      <strong>login-failure (1 test)</strong>
+                      <span style="background:#c0392b;color:#fff;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:700">product-bug</span>
+                    </div>
+                    <p class="cand-note">testFileChanged: <strong>false</strong> — the test is committed and unchanged, so the model treats the missing state as a possible real defect.</p>
+                  </div>
+                </div>
+                <div class="candidate pass">
+                  <div class="cand-mark">2</div>
+                  <div class="cand-body" style="width:100%">
+                    <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+                      <strong>cascade (2 tests, deduped)</strong>
+                      <span style="background:#128a54;color:#fff;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:700">test-bug</span>
+                    </div>
+                    <p class="cand-note">testFileChanged: <strong>true</strong> — the test file was just added, so the model correctly flips to test-bug. This is the exact failure that got "product-bug" in v7/v8 without the git signal.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ================= ROADMAP ================= -->
       <section id="panel-roadmap" role="tabpanel" aria-labelledby="tab-roadmap" hidden>
         <div class="shell">
@@ -913,10 +960,10 @@ drift     -> cached selector fails  -> re-heal</pre>
               <li><strong>v6:</strong> multi-locator cache so single-attribute drift heals from a fallback.</li>
               <li><strong>v7:</strong> Failure Explainer (Task 3 Option A) — on failure, send page state + error to xAI and attach a categorized explanation to the report.</li>
               <li><strong>v8:</strong> attach a page screenshot to the failure request (multimodal), so the model sees the render, not just the DOM text.</li>
+              <li><strong>v9 (mode B):</strong> post-run reporter that batches + dedups failures and enriches each with run history + git diff, so classification is grounded rather than guessed.</li>
             </ul>
             <h3>Still planned</h3>
             <ul>
-              <li><strong>v7 mode B:</strong> move the LLM call to a post-run reporter — batch all final failures, dedup by error signature, and enrich with run history + git diff to sharpen classification.</li>
               <li><strong>Refusal rules:</strong> never heal destructive actions (delete, pay, submit-order) without an explicit allow-list.</li>
               <li><strong>Report trends:</strong> attach heal timelines to the HTML report and chart selector drift across runs.</li>
             </ul>

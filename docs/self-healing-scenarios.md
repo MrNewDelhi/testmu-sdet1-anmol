@@ -109,6 +109,28 @@ Every xAI call (repair and analysis, text or multimodal) is recorded in
 `src/agents/self-healing/xai-calls.jsonl` with latency, status, token usage, and
 a `hasScreenshot` flag for debugging and cost tracking.
 
+### v9: mode B — batched, deduped, enriched (closing the context gap)
+
+Mode A analyzes per test at failure time. Mode B (`FAILURE_ANALYSIS_MODE=b`)
+moves the LLM call to `BatchedFailureAnalysisReporter`, which runs after the
+whole suite. The fixture only stashes the raw failure context; the reporter:
+
+- **dedups** failures by error signature — a cascade of N tests sharing one root
+  cause becomes a single LLM call, and the cascade size is itself a signal;
+- **enriches** each group with the context the model was missing: the test's
+  **prior-run status** (persisted in `src/agents/self-healing/failure-history.json`,
+  which lives outside the `test-results` dir Playwright wipes each run), whether
+  the failing **test file was recently changed** (git), and the run's changed files;
+- feeds these as **priors** ("recently-changed test + stable page → lean
+  test-bug"; "passed recently, now fails → lean product-bug/environment"; "many
+  identical failures → environment/setup").
+
+Demonstrated live: the same failure that xAI called `product-bug` in v7/v8 is
+correctly reclassified `test-bug` in mode B once it learns the test file was just
+added — the git signal supplies the product-intent context an image never could.
+See `src/reporters/BatchedFailureAnalysisReporter.ts` and the cascade demo
+(`npm run test:self-healing:v9`).
+
 ## Why Generated Cases Now Help
 
 The generated Task 2 cases are not default executable tests anymore. They are structured design artifacts with Playwright-style drafts and self-healing notes. This keeps `npm test` clean while preserving the interview evidence for:

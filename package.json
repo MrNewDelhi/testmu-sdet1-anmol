@@ -13,6 +13,7 @@
     "test:self-healing:v5": "playwright test tests/demo/self-healing-v5-deterministic.spec.ts",
     "test:self-healing:v6": "playwright test tests/demo/self-healing-v6-multi-locator.spec.ts",
     "test:self-healing:v7": "playwright test -c playwright.failure-demo.config.ts",
+    "test:self-healing:v9": "FAILURE_ANALYSIS_MODE=b playwright test -c playwright.failure-demo.config.ts",
     "test:generated:run": "playwright test tests/login/generated-login.spec.ts tests/dashboard/generated-dashboard.spec.ts tests/api/generated-api.spec.ts",
     "test:generated:list": "tsx scripts/list-generated-cases.ts",
     "test:login": "playwright test tests/login",
