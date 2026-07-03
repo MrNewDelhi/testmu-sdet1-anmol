@@ -81,6 +81,7 @@ The self-healing framework evolves across six versions, each with a visualizer t
 | v8 | Screenshot attached to the failure request (multimodal) | `npm run test:self-healing:v7` (now sends a screenshot) |
 | v9 | Mode B — batched post-run analysis, deduped + enriched with history/git | `npm run test:self-healing:v9` |
 | v10 | API failures — send the raw HTTP request + response (no DOM) | `npm run test:self-healing:v7` / `:v9` |
+| v11 | Redact PII before sending to the remote LLM (patterns + local judge) | `npx playwright test tests/framework/redact.spec.ts` |
 
 Run every version plus the framework unit tests with `npm run test:self-healing`. Open the animated version tabs with `npm run serve:demo`.
 
@@ -100,6 +101,10 @@ This is the assignment's core Task 3 deliverable: a real xAI call wired into the
 - feeds those as priors so the classification is grounded, not guessed.
 
 Run `npm run test:self-healing:v9` (mode B; `FAILURE_ANALYSIS_MODE=b`). In the demo this is visible: a newly-added test file is classified **test-bug** (git shows it just changed), while an unchanged committed test failing the same way stays **product-bug** — the exact `product-bug`/`test-bug` gap from v7/v8, now resolved by context.
+
+**v10 (API failures):** for API-level tests the DOM/screenshot are useless, so use the `api` fixture (a recording `APIRequestContext` wrapper) — on failure the raw request (method/url/body) and response (status/body) are sent instead. In the demo, a test asserting `POST /booking` returns 500 (it returns 200) is correctly called **test-bug** because xAI can see the request succeeded.
+
+**v11 (PII redaction):** every free-text field is redacted before it leaves for the remote LLM. It is **pattern-based over the full text** (not truncation): deterministic regex for the well-shaped PII (email, card/Luhn, SSN, JWT, token, API key, phone, public IP) plus **field-aware** rules that redact the value of sensitive fields (`password`, `token`, `cvv`, …) whatever its shape — a password like `hunter2` has no pattern, so it's caught by its field, and password-field values are also dropped at DOM-capture time. An optional small **local model** (`LOCAL_LLM_URL` / `PII_JUDGE_MODEL`, e.g. Ollama) acts as an LLM-judge for the fuzzy residue (names, addresses); unset = deterministic-only. See `src/framework/privacy/redact.ts`.
 
 - Task 3 remaining: v7 mode B (batched post-run reporter), destructive-action refusal allow-list, and heal-trend reporting.
 - Task 3 final: publish sample output and reporting artifacts.

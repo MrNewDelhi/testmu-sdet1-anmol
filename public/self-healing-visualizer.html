@@ -523,6 +523,7 @@
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v8" id="tab-v8">v8 · Screenshot (vision)</button>
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v9" id="tab-v9">v9 · Batched + enriched</button>
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v10" id="tab-v10">v10 · API req/response</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v11" id="tab-v11">v11 · PII redaction</button>
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-roadmap" id="tab-roadmap">Roadmap</button>
       </div>
 
@@ -988,6 +989,41 @@ fix: assert 200 (the create worked), not 500.</pre>
         </div>
       </section>
 
+      <!-- ================= V11 ================= -->
+      <section id="panel-v11" role="tabpanel" aria-labelledby="tab-v11" hidden>
+        <div class="summary">
+          <article class="card"><span class="kicker green">Tier 1</span><strong>Deterministic patterns</strong><p>Always on, over the full text: email, card (Luhn), SSN, JWT, token, key, phone, public IP.</p></article>
+          <article class="card"><span class="kicker green">Field-aware</span><strong>Secrets by field</strong><p>A password like "hunter2" has no shape — redact the value after password/token/cvv keys.</p></article>
+          <article class="card"><span class="kicker blue">Tier 2</span><strong>Local judge</strong><p>A small LOCAL model catches fuzzy PII (names, addresses) a regex can't — best-effort.</p></article>
+          <article class="card"><span class="kicker amber">Rule</span><strong>Redact, don't slice</strong><p>Patterns run on the whole text; truncation is only a post-redaction token guard.</p></article>
+        </div>
+
+        <div class="shell">
+          <div class="topbar">
+            <div>
+              <strong>PII redaction before anything leaves for the remote LLM</strong>
+              <p class="status">Deterministic first (offline, exhaustive on known shapes); the local judge is the fallback for the fuzzy residue.</p>
+            </div>
+          </div>
+          <div class="stage" style="grid-template-columns: 1fr 1fr;">
+            <article class="node">
+              <h3>Before</h3>
+              <pre class="code">error: login failed for jane.doe@acme.com
+{"password":"hunter2","token":"xai-AB…"}
+card 4242 4242 4242 4242  ssn 123-45-6789
+from 203.0.113.7  (dashboard for Jane Doe)</pre>
+            </article>
+            <article class="node">
+              <h3>After → sent to xAI</h3>
+              <pre class="code">error: login failed for [REDACTED_EMAIL]
+{"password":"[REDACTED_SECRET]","token":"[REDACTED_API_KEY]"}
+card [REDACTED_CREDIT_CARD]  ssn [REDACTED_SSN]
+from [REDACTED_IP]  (dashboard for [REDACTED_NAME])</pre>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <!-- ================= ROADMAP ================= -->
       <section id="panel-roadmap" role="tabpanel" aria-labelledby="tab-roadmap" hidden>
         <div class="shell">
@@ -1003,6 +1039,7 @@ fix: assert 200 (the create worked), not 500.</pre>
               <li><strong>v8:</strong> attach a page screenshot to the failure request (multimodal), so the model sees the render, not just the DOM text.</li>
               <li><strong>v9 (mode B):</strong> post-run reporter that batches + dedups failures and enriches each with run history + git diff, so classification is grounded rather than guessed.</li>
               <li><strong>v10:</strong> for API failures, capture and send the raw HTTP request + response (there is no DOM to send).</li>
+              <li><strong>v11:</strong> redact PII before sending to the remote LLM — deterministic patterns (incl. field-aware secrets) plus a small local model as an LLM-judge for names/addresses.</li>
             </ul>
             <h3>Still planned</h3>
             <ul>

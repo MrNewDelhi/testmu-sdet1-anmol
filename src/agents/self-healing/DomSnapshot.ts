@@ -9,8 +9,14 @@ export async function captureInteractiveDom(page: Page): Promise<string> {
     return nodes
       .map((node, index) => {
         const element = node as HTMLElement;
+        // Never emit the value of a sensitive field (password/secret/token/…) —
+        // it would leak the actual secret into the snapshot text.
+        const type = (element.getAttribute('type') || '').toLowerCase();
+        const idName = `${element.getAttribute('id') || ''} ${element.getAttribute('name') || ''}`;
+        const sensitive = type === 'password' || /pass|secret|token|cvv|cvc|otp|pin|ssn/i.test(idName);
         const attrs = ['id', 'name', 'type', 'role', 'aria-label', 'data-testid', 'href', 'value', 'placeholder']
           .map((attr) => {
+            if (attr === 'value' && sensitive) return null;
             const value = element.getAttribute(attr);
             return value ? `${attr}="${value}"` : null;
           })

@@ -69,7 +69,7 @@
 - [x] Log every xAI API call (latency/status/tokens/errors, hasScreenshot) to xai-calls.jsonl for debugging and cost tracking.
 - [x] v9 (mode B): move the LLM call to a post-run reporter — batch/dedup final failures by signature and enrich each with prior-run status (persisted), git-changed-files, and cascade size; verified the git signal flips a newly-changed test from product-bug to test-bug.
 - [x] v10: for API-level failures, capture and send the raw request and response to the failure analysis (RecordingApi + apiFailureAnalysis fixture). Verified live: xAI reads the exchange and correctly classifies an "expected 500, got 200" test as test-bug.
-- [ ] v11: PII redaction before sending context to the remote LLM — deterministic regex for the high-confidence PII (email/card/SSN/token), plus a small local model as an LLM-judge for the fuzzy cases (names/addresses).
+- [x] v11: PII redaction before sending context to the remote LLM — pattern-based over the full text (not slicing), deterministic regex for well-shaped PII plus field-aware rules for secrets (password/token/cvv values by field name), password values also dropped at DOM capture, and an optional small local model as an LLM-judge for fuzzy PII (names/addresses).
 - [ ] Add a destructive-action refusal allow-list (delete/pay/submit-order) on top of the contract.
 - [ ] Add a code comment explaining why the final Task 3 option was selected over the other assignment option.
 - [x] Attach or output the LLM response inside v1 test results.

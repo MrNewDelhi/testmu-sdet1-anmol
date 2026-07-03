@@ -141,6 +141,28 @@ live: a test asserting `POST /booking` returns 500 (it returns 200) is correctly
 called `test-bug` because xAI can see the request succeeded — high-signal context
 that needs no git enrichment. See `src/fixtures/apiFailureAnalysisFixtures.ts`.
 
+### v11: PII redaction before the remote LLM
+
+All failure context is redacted before it is sent to the remote model. The
+redaction is **pattern-based over the full text — never truncation** (slicing
+would drop the very context the model needs). Two tiers:
+
+- **Deterministic (always on):** regex for the well-shaped PII — email, credit
+  card (Luhn-validated), SSN, JWT, bearer token, API key, phone, public IP
+  (loopback/private kept). Plus **field-aware** rules: the value of a sensitive
+  field (`password`, `token`, `cvv`, `otp`, …) is redacted regardless of its
+  shape, because a password like `hunter2` matches no pattern — it is caught by
+  its field. Password-field values are also dropped at DOM-capture time.
+- **LLM-as-judge (optional):** a small **local** model (`LOCAL_LLM_URL` /
+  `PII_JUDGE_MODEL`) redacts the fuzzy residue a regex can't — person names,
+  street addresses. Best-effort: if unavailable, deterministic-only runs and the
+  suite never blocks. Keeping the judge local avoids sending PII off-box just to
+  decide whether it is PII.
+
+The screenshot (v8) is not redactable as text; a caller handling PII-bearing
+pages should gate it. See `src/framework/privacy/redact.ts` and
+`tests/framework/redact.spec.ts`.
+
 ## Why Generated Cases Now Help
 
 The generated Task 2 cases are not default executable tests anymore. They are structured design artifacts with Playwright-style drafts and self-healing notes. This keeps `npm test` clean while preserving the interview evidence for:
