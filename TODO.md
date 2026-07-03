@@ -57,6 +57,11 @@
 - [x] Prove the cache end-to-end: heal via xAI once, then serve from cache with no second call.
 - [x] Add target-contract disambiguation so a confident-but-wrong heal (header link vs form submit) is refused.
 - [x] Add a v4 demo: decoy header link refused, real submit accepted, and a live xAI run steered by the contract.
+- [x] Add v5 deterministic-first resolution (rebuild the locator locally; escalate to xAI only when ambiguous) to cut token cost.
+- [x] Add a v5 demo: local keyword/contract resolution with zero xAI calls, plus an escalation case.
+- [x] Add v6 multi-locator cache (store the target's top-3 attribute-diverse locators) so single-attribute drift heals from a fallback.
+- [x] Add a v6 demo: rename the primary id and heal from the data-testid locator with no xAI call.
+- [x] Give each of the six versions its own visualizer tab and demo script.
 - [ ] Add a destructive-action refusal allow-list (delete/pay/submit-order) on top of the contract.
 - [ ] Add a code comment explaining why the final Task 3 option was selected over the other assignment option.
 - [x] Attach or output the LLM response inside v1 test results.

@@ -67,8 +67,19 @@ testmu-sdet1-anmol/
 
 ## Next Steps
 
-- Task 3 v3 (done): programmatic confidence scoring with a refusal gate, and a SQLite locator cache so xAI is called once per break (`src/framework/self-healing/confidence.ts`, `LocatorCache.ts`).
-- Task 3 v4 (done): target-contract disambiguation — the healed element must satisfy a role/type/ancestor/text contract, so a confident-but-wrong heal (e.g. a header nav link vs the form submit) is refused (`src/framework/self-healing/contract.ts`, demo `tests/demo/self-healing-v4-contract.spec.ts`).
+The self-healing framework evolves across six versions, each with a visualizer tab and a demo script:
+
+| Version | Idea | Demo |
+| --- | --- | --- |
+| v1 | Naive xAI locator repair | `npm run test:self-healing:v1` |
+| v2 | Centralized service + fixture | `npm run test:self-healing:v2` |
+| v3 | Confidence gate + SQLite cache | `npm run test:self-healing:v3` |
+| v4 | Target-contract disambiguation (refuse wrong element) | `npm run test:self-healing:v4` |
+| v5 | Deterministic-first (skip the LLM on easy breaks) | `npm run test:self-healing:v5` |
+| v6 | Multi-locator cache (survive single-attribute drift) | `npm run test:self-healing:v6` |
+
+Run every version plus the framework unit tests with `npm run test:self-healing`. Open the animated version tabs with `npm run serve:demo`.
+
 - Task 3 remaining: destructive-action refusal allow-list, and heal-trend reporting in the HTML report.
 - Task 3 final: publish sample output and reporting artifacts.
 

@@ -1,0 +1,15 @@
+{
+  "note": "Deterministic-first resolution: the intent keywords {submit, login} uniquely picked the submit button, so a stable locator was rebuilt locally and NO xAI call was made (0 tokens).",
+  "selector": "#actual-login-submit",
+  "confidence": 1,
+  "reason": "deterministic: unique id match, no LLM call",
+  "brokenSelector": "#submit-login-button-does-not-exist",
+  "intent": "The primary submit button for the login form",
+  "source": "deterministic",
+  "version": "v5-deterministic",
+  "locatorStrategy": "id",
+  "computedConfidence": 1,
+  "matchCount": 1,
+  "contractValidated": false,
+  "timestamp": "2026-07-04T09:05:12.100Z"
+}

@@ -1,0 +1,22 @@
+{
+  "storedLocators": [
+    { "selector": "#actual-login-submit", "strategy": "id" },
+    { "selector": "[data-testid=\"login-submit\"]", "strategy": "data-testid" },
+    { "selector": "#login-form button[type=\"submit\"]", "strategy": "form+type" }
+  ],
+  "note": "The primary id was renamed, so #actual-login-submit no longer resolves. The cache tried the next stored locator and healed via data-testid — no xAI call.",
+  "healEvent": {
+    "selector": "[data-testid=\"login-submit\"]",
+    "confidence": 0.95,
+    "reason": "cache fallback: primary drifted, healed via data-testid",
+    "brokenSelector": "#submit-login-button-does-not-exist",
+    "intent": "The primary submit button for the login form",
+    "source": "cache",
+    "version": "v6-multi-locator",
+    "locatorStrategy": "data-testid",
+    "computedConfidence": 0.95,
+    "matchCount": 1,
+    "contractValidated": false,
+    "timestamp": "2026-07-04T09:07:44.310Z"
+  }
+}

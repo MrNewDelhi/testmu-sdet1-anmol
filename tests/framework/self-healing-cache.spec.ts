@@ -55,6 +55,11 @@ test.describe('locator cache', () => {
     brokenSelector: '#does-not-exist',
     intent: 'The primary submit button',
     healedSelector: '#actual-login-submit',
+    locators: [
+      { selector: '#actual-login-submit', strategy: 'id' },
+      { selector: '[data-testid="login-submit"]', strategy: 'data-testid' },
+      { selector: '#login-form button[type="submit"]', strategy: 'form+type' },
+    ],
     modelConfidence: 0.95,
     computedConfidence: 0.95,
     matchCount: 1,
@@ -69,6 +74,13 @@ test.describe('locator cache', () => {
     expect(row?.computed_confidence).toBe(0.95);
     expect(row?.source).toBe('xai');
     expect(row?.hit_count).toBe(0);
+  });
+
+  test('stores the ranked, attribute-diverse fallback locators', () => {
+    cache.upsert(base);
+    const row = cache.get(base.pageKey, base.brokenSelector, base.intent);
+    const locators = JSON.parse(row!.locators) as Array<{ selector: string; strategy: string }>;
+    expect(locators.map((l) => l.strategy)).toEqual(['id', 'data-testid', 'form+type']);
   });
 
   test('recordHit increments hit_count', () => {

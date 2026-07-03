@@ -5,7 +5,14 @@ import { expect, test } from '@playwright/test';
 import { XaiClient } from '../../src/ai/XaiClient.js';
 import { SelfHealingService } from '../../src/framework/self-healing/SelfHealingService.js';
 import { LocatorCache } from '../../src/framework/self-healing/LocatorCache.js';
+import { DeterministicLocator } from '../../src/framework/self-healing/DeterministicLocator.js';
 import type { TargetContract } from '../../src/framework/self-healing/contract.js';
+
+// Force the xAI path so this demo isolates the contract guardrail on the model's
+// answer (the deterministic layer would otherwise resolve this correctly itself).
+function noDeterministic(): DeterministicLocator {
+  return { candidates: async () => [], locatorsFor: async () => [] } as unknown as DeterministicLocator;
+}
 
 const BROKEN = '#submit-login-button-does-not-exist';
 const INTENT = 'The primary submit button for the login form';
@@ -50,7 +57,7 @@ test.describe('self-healing v4 - contract disambiguation', () => {
   test('refuses a confident but wrong heal (the header login link)', async ({ page }) => {
     // The model confidently returns the header nav link: a unique, stable <a>
     // that would pass existence and confidence checks but is the wrong element.
-    const healing = new SelfHealingService(page, fakeXai('#nav-login'), cache);
+    const healing = new SelfHealingService(page, fakeXai('#nav-login'), cache, noDeterministic());
 
     await expect(healing.locator(BROKEN, INTENT, SUBMIT_CONTRACT)).rejects.toThrow(/contract/i);
 
@@ -60,7 +67,7 @@ test.describe('self-healing v4 - contract disambiguation', () => {
   });
 
   test('accepts and validates the correct submit button', async ({ page }, testInfo) => {
-    const healing = new SelfHealingService(page, fakeXai('#actual-login-submit'), cache);
+    const healing = new SelfHealingService(page, fakeXai('#actual-login-submit'), cache, noDeterministic());
 
     const button = await healing.locator(BROKEN, INTENT, SUBMIT_CONTRACT);
     await button.click();
@@ -79,7 +86,7 @@ test.describe('self-healing v4 - contract disambiguation', () => {
   test('real xAI heal is steered by the contract and validated end to end', async ({ page }) => {
     // End-to-end with the real model: the enriched intent guides recall and the
     // contract guards precision. The healed element must be the form submit.
-    const healing = new SelfHealingService(page, new XaiClient(), cache);
+    const healing = new SelfHealingService(page, new XaiClient(), cache, noDeterministic());
 
     const button = await healing.locator(BROKEN, INTENT, SUBMIT_CONTRACT);
     await button.click();

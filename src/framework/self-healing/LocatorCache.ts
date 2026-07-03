@@ -17,12 +17,19 @@ import { dirname, resolve } from 'node:path';
 
 const defaultDbPath = resolve(process.cwd(), 'src/agents/self-healing/locator-cache.sqlite');
 
+export interface StoredLocator {
+  selector: string;
+  strategy: string;
+}
+
 export interface CacheEntry {
   id: number;
   page_key: string;
   broken_selector: string;
   intent: string;
   healed_selector: string;
+  /** JSON array of attribute-diverse fallback locators (StoredLocator[]). */
+  locators: string;
   model_confidence: number;
   computed_confidence: number;
   match_count: number;
@@ -39,11 +46,15 @@ export interface CacheUpsert {
   brokenSelector: string;
   intent: string;
   healedSelector: string;
+  /** Ranked, attribute-diverse locators for the same target (id, testid, ...). */
+  locators: StoredLocator[];
   modelConfidence: number;
   computedConfidence: number;
   matchCount: number;
   reason: string;
   domHash: string;
+  /** How the entry was produced: 'xai' (LLM) or 'deterministic' (local). */
+  source?: 'xai' | 'deterministic';
 }
 
 export class LocatorCache {
@@ -58,7 +69,8 @@ export class LocatorCache {
         page_key          TEXT NOT NULL,   -- normalized page identity (part of key)
         broken_selector   TEXT NOT NULL,   -- selector that failed (part of key)
         intent            TEXT NOT NULL,   -- human intent string (part of key)
-        healed_selector   TEXT NOT NULL,   -- validated repaired selector (cached payload)
+        healed_selector   TEXT NOT NULL,   -- primary validated selector (cached payload)
+        locators          TEXT NOT NULL DEFAULT '[]', -- ranked attribute-diverse fallback locators (JSON)
         model_confidence  REAL NOT NULL,   -- xAI self-reported confidence
         computed_confidence REAL NOT NULL, -- our uniqueness/stability score
         match_count       INTEGER NOT NULL,-- elements the healed selector matched
@@ -71,6 +83,12 @@ export class LocatorCache {
         UNIQUE(page_key, broken_selector, intent)
       );
     `);
+    // Migrate pre-existing DB files that predate the multi-locator column.
+    try {
+      this.db.exec(`ALTER TABLE locator_cache ADD COLUMN locators TEXT NOT NULL DEFAULT '[]'`);
+    } catch {
+      // Column already exists.
+    }
   }
 
   /** Normalize a URL into a stable page key (route param for OpenCart, else pathname). */
@@ -102,21 +120,23 @@ export class LocatorCache {
   /** Insert or replace an entry; preserves created_at on update, resets usage. */
   upsert(entry: CacheUpsert): void {
     const now = new Date().toISOString();
+    const source = entry.source ?? 'xai';
     this.db
       .prepare(
         `INSERT INTO locator_cache
-           (page_key, broken_selector, intent, healed_selector, model_confidence,
+           (page_key, broken_selector, intent, healed_selector, locators, model_confidence,
             computed_confidence, match_count, reason, dom_hash, source,
             hit_count, created_at, last_used_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'xai', 0, ?, ?)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
          ON CONFLICT(page_key, broken_selector, intent) DO UPDATE SET
            healed_selector = excluded.healed_selector,
+           locators = excluded.locators,
            model_confidence = excluded.model_confidence,
            computed_confidence = excluded.computed_confidence,
            match_count = excluded.match_count,
            reason = excluded.reason,
            dom_hash = excluded.dom_hash,
-           source = 'xai',
+           source = excluded.source,
            last_used_at = excluded.last_used_at`,
       )
       .run(
@@ -124,11 +144,13 @@ export class LocatorCache {
         entry.brokenSelector,
         entry.intent,
         entry.healedSelector,
+        JSON.stringify(entry.locators ?? []),
         entry.modelConfidence,
         entry.computedConfidence,
         entry.matchCount,
         entry.reason,
         entry.domHash,
+        source,
         now,
         now,
       );

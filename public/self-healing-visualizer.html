@@ -513,10 +513,13 @@
 
     <main class="wrap">
       <div class="tabs" role="tablist" aria-label="Framework versions">
-        <button class="tab" role="tab" aria-selected="true" aria-controls="panel-v1" id="tab-v1">v1 · Naive helper</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v2" id="tab-v2">v2 · Centralized service</button>
+        <button class="tab" role="tab" aria-selected="true" aria-controls="panel-v1" id="tab-v1">v1 · Naive</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v2" id="tab-v2">v2 · Centralized</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v3" id="tab-v3">v3 · Confidence + Cache</button>
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v4" id="tab-v4">v4 · Disambiguation</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v3" id="tab-v3">Roadmap</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v5" id="tab-v5">v5 · Deterministic</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v6" id="tab-v6">v6 · Multi-locator</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="panel-roadmap" id="tab-roadmap">Roadmap</button>
       </div>
 
       <!-- ================= V1 ================= -->
@@ -651,6 +654,39 @@ await btn.click();</pre>
         </div>
       </section>
 
+      <!-- ================= V3 ================= -->
+      <section id="panel-v3" role="tabpanel" aria-labelledby="tab-v3" hidden>
+        <div class="summary">
+          <article class="card"><span class="kicker blue">Signal</span><strong>Uniqueness</strong><p>Matches exactly one element → strong; many → ambiguous.</p></article>
+          <article class="card"><span class="kicker blue">Signal</span><strong>Stability</strong><p><code>id / data-testid</code> &gt; role / text &gt; nth-child.</p></article>
+          <article class="card"><span class="kicker amber">Gate</span><strong>Refuse &lt; 0.5</strong><p>The model's number is only an upper bound, never the decider.</p></article>
+          <article class="card"><span class="kicker green">Cache</span><strong>Call xAI once</strong><p>SQLite keyed on <code>(page, broken selector, intent)</code>.</p></article>
+        </div>
+
+        <div class="shell">
+          <div class="topbar">
+            <div>
+              <strong>Confidence scoring — computed = min(model, uniqueness) × stability</strong>
+              <p class="status">The self-reported model confidence is capped by signals we can measure.</p>
+            </div>
+          </div>
+          <div class="stage" style="grid-template-columns: 1fr 1fr;">
+            <article class="node">
+              <h3>Example scores</h3>
+              <pre class="code">#actual-login-submit    model 0.95  uniq 1.0  stab 1.0  => 0.95  accept
+a[href*=login]  (2 hits) model 0.99  uniq 0.3  stab 0.75 => 0.22  refuse
+div:nth-child(3) > button model 0.90 uniq 1.0  stab 0.4  => 0.36  refuse</pre>
+            </article>
+            <article class="node">
+              <h3>Cache lifecycle</h3>
+              <pre class="code">1st break -> xAI heal -> validate -> UPSERT (source=xai)
+2nd break -> cache hit -> re-validate -> click (no xAI)
+drift     -> cached selector fails  -> re-heal</pre>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <!-- ================= V4 ================= -->
       <section id="panel-v4" role="tabpanel" aria-labelledby="tab-v4" hidden>
         <div class="summary">
@@ -717,14 +753,82 @@ await btn.click();</pre>
         </div>
       </section>
 
+      <!-- ================= V5 ================= -->
+      <section id="panel-v5" role="tabpanel" aria-labelledby="tab-v5" hidden>
+        <div class="summary">
+          <article class="card"><span class="kicker green">Cost</span><strong>Try local first</strong><p>Rebuild the locator deterministically before any paid LLM call.</p></article>
+          <article class="card"><span class="kicker blue">Narrow</span><strong>Contract or keywords</strong><p>Filter interactive elements to a single intended target.</p></article>
+          <article class="card"><span class="kicker blue">Build</span><strong>Stable + unique</strong><p>id &gt; data-testid &gt; name &gt; aria-label &gt; form+type, verified unique.</p></article>
+          <article class="card"><span class="kicker amber">Escalate</span><strong>Only when stuck</strong><p>0 or &gt;1 candidates → hand off to xAI.</p></article>
+        </div>
+
+        <div class="shell">
+          <div class="topbar">
+            <div>
+              <strong>Deterministic-first — the LLM is the fallback, not the default</strong>
+              <p class="status">Easy breaks cost zero tokens; only genuinely ambiguous ones reach the model.</p>
+            </div>
+          </div>
+          <div class="stage" style="grid-template-columns: 1fr;">
+            <pre class="code">resolve(intent="submit login button")
+  narrow interactive elements by keywords {submit, login} (or contract)
+  → exactly 1 candidate?
+      yes → build "#actual-login-submit" (unique id) → <span style="color:#4cc38a">use it · 0 tokens</span>
+      no  → capture DOM → <span style="color:#e0a94b">escalate to xAI</span></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= V6 ================= -->
+      <section id="panel-v6" role="tabpanel" aria-labelledby="tab-v6" hidden>
+        <div class="summary">
+          <article class="card"><span class="kicker blue">Store</span><strong>Top 3 locators</strong><p>Different attributes for the same target, ranked by stability.</p></article>
+          <article class="card"><span class="kicker green">Resilient</span><strong>Survive drift</strong><p>If one attribute changes, a sibling locator still resolves.</p></article>
+          <article class="card"><span class="kicker green">Cheap</span><strong>No re-heal</strong><p>Fallback happens from the cache — no extra LLM call.</p></article>
+          <article class="card"><span class="kicker amber">Escalate</span><strong>Only if all fail</strong><p>Every stored locator broken → re-heal from scratch.</p></article>
+        </div>
+
+        <div class="shell">
+          <div class="topbar">
+            <div>
+              <strong>Multi-locator cache — one target, several attribute-diverse locators</strong>
+              <p class="status" id="v6-status">Three locators are cached for the submit button. Rename the id to simulate drift.</p>
+            </div>
+            <div class="controls">
+              <button class="btn primary" type="button" id="v6-break">Rename the id</button>
+              <button class="btn" type="button" id="v6-reset">Reset</button>
+            </div>
+          </div>
+          <div class="stage" style="grid-template-columns: 1fr;">
+            <div class="candidates">
+              <div class="candidate" data-locator="id">
+                <div class="cand-mark" data-mark>1</div>
+                <div class="cand-body"><code>#actual-login-submit</code><p class="cand-note" data-note>Primary — <strong>id</strong> strategy.</p></div>
+              </div>
+              <div class="candidate" data-locator="testid">
+                <div class="cand-mark" data-mark>2</div>
+                <div class="cand-body"><code>[data-testid="login-submit"]</code><p class="cand-note" data-note>Fallback — <strong>data-testid</strong> strategy.</p></div>
+              </div>
+              <div class="candidate" data-locator="form">
+                <div class="cand-mark" data-mark>3</div>
+                <div class="cand-body"><code>#login-form button[type="submit"]</code><p class="cand-note" data-note>Fallback — <strong>form+type</strong> strategy.</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ================= ROADMAP ================= -->
-      <section id="panel-v3" role="tabpanel" aria-labelledby="tab-v3" hidden>
+      <section id="panel-roadmap" role="tabpanel" aria-labelledby="tab-roadmap" hidden>
         <div class="shell">
           <div class="roadmap">
-            <h3>Shipped in v3</h3>
+            <h3>Shipped (v1–v6)</h3>
             <ul>
-              <li><strong>Confidence gate:</strong> a repair is scored from <em>uniqueness</em> (matches exactly one element) and <em>selector stability</em> (id/data-testid &gt; role/text &gt; nth-child), capped by the model's own number. Below <code>0.5</code> the service refuses to heal instead of clicking a guess. <code>src/framework/self-healing/confidence.ts</code></li>
-              <li><strong>Selector cache:</strong> a SQLite cache keyed on <code>(page_key, broken_selector, intent)</code> reuses a previously healed selector so xAI is called once, not every run — still re-validated against the live DOM before use. <code>src/framework/self-healing/LocatorCache.ts</code></li>
+              <li><strong>v1–v2:</strong> naive xAI locator repair, centralized into a shared service + fixture.</li>
+              <li><strong>v3:</strong> programmatic confidence gate + SQLite locator cache.</li>
+              <li><strong>v4:</strong> target-contract disambiguation (refuse the confident-but-wrong element).</li>
+              <li><strong>v5:</strong> deterministic-first resolution to avoid the LLM on easy cases.</li>
+              <li><strong>v6:</strong> multi-locator cache so single-attribute drift heals from a fallback.</li>
             </ul>
             <h3>Still planned</h3>
             <ul>
@@ -938,6 +1042,36 @@ await btn.click();</pre>
             c.querySelector('[data-note]').textContent = DEFAULT_NOTE[key];
           });
           status.textContent = 'The broken submit selector needs healing. Both candidates look like "login".';
+        });
+      })();
+
+      // ---- v6 multi-locator fallback -----------------------------------
+      (function () {
+        const breakBtn = document.getElementById('v6-break');
+        const resetBtn = document.getElementById('v6-reset');
+        const status = document.getElementById('v6-status');
+        if (!breakBtn) return;
+        const rows = {
+          id: document.querySelector('#panel-v6 [data-locator="id"]'),
+          testid: document.querySelector('#panel-v6 [data-locator="testid"]'),
+          form: document.querySelector('#panel-v6 [data-locator="form"]'),
+        };
+        breakBtn.addEventListener('click', () => {
+          rows.id.classList.add('fail');
+          rows.id.querySelector('[data-mark]').textContent = '✗';
+          rows.id.querySelector('[data-note]').innerHTML = 'Primary — <strong>id</strong> renamed → no longer resolves.';
+          rows.testid.classList.add('pass');
+          rows.testid.querySelector('[data-mark]').textContent = '✓';
+          rows.testid.querySelector('[data-note]').innerHTML = 'Healed via <strong>data-testid</strong> — straight from the cache, no LLM call.';
+          status.textContent = 'Primary id drifted → cache fell back to the data-testid locator (event: v6-multi-locator).';
+        });
+        resetBtn.addEventListener('click', () => {
+          [rows.id, rows.testid, rows.form].forEach((r) => r.classList.remove('pass', 'fail'));
+          rows.id.querySelector('[data-mark]').textContent = '1';
+          rows.id.querySelector('[data-note]').innerHTML = 'Primary — <strong>id</strong> strategy.';
+          rows.testid.querySelector('[data-mark]').textContent = '2';
+          rows.testid.querySelector('[data-note]').innerHTML = 'Fallback — <strong>data-testid</strong> strategy.';
+          status.textContent = 'Three locators are cached for the submit button. Rename the id to simulate drift.';
         });
       })();
     </script>

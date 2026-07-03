@@ -50,6 +50,22 @@ verification. Contract validation is the guardrail; see
 `tests/demo/self-healing-v4-contract.spec.ts` demo (decoy refused, real target
 accepted, and a live end-to-end run steered by the contract).
 
+## Token cost: deterministic-first, then multi-locator cache (v5, v6)
+
+The LLM is the expensive part, so it should be the fallback, not the default.
+
+- **v5 deterministic-first** (`DeterministicLocator`): before any xAI call, narrow
+  the page's interactive elements by the contract or the unique keywords in the
+  intent. If exactly one element survives, rebuild a stable, verified locator
+  locally (id > data-testid > name > aria-label > form+type). Only when the
+  narrowing is ambiguous (0 or >1 candidates) do we escalate to the model — so
+  easy breaks cost zero tokens. See `tests/demo/self-healing-v5-deterministic.spec.ts`.
+- **v6 multi-locator cache**: store the target's top-3 attribute-diverse locators
+  instead of one. On a repeat break the cache tries them in rank order, so if a
+  single attribute changes (say the id is renamed) the heal still succeeds from
+  the data-testid or form+type locator — no re-heal, no LLM call. See
+  `tests/demo/self-healing-v6-multi-locator.spec.ts`.
+
 ## Why Generated Cases Now Help
 
 The generated Task 2 cases are not default executable tests anymore. They are structured design artifacts with Playwright-style drafts and self-healing notes. This keeps `npm test` clean while preserving the interview evidence for:
