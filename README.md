@@ -81,6 +81,8 @@ The self-healing framework evolves across six versions, each with a visualizer t
 
 Run every version plus the framework unit tests with `npm run test:self-healing`. Open the animated version tabs with `npm run serve:demo`.
 
+**xAI call log:** every real xAI call (selector repair and failure analysis) is routed through one method in `XaiClient` that appends a JSONL line to `src/agents/self-healing/xai-calls.jsonl` — timestamp, kind, model, latency, HTTP status, request size, token usage, and any error — for debugging and cost tracking (gitignored). Set `XAI_DEBUG=1` to also echo each call to stderr.
+
 ### v7 — Failure Explainer (Task 3, Option A)
 
 This is the assignment's core Task 3 deliverable: a real xAI call wired into the framework. When a test fails, an auto-fixture captures the page state (compacted DOM), URL, and assertion error, sends them to xAI, and attaches a plain-English explanation with a **category** (`product-bug` / `environment` / `flaky` / `test-bug`), root cause, and suggested fix to the report.
