@@ -44,6 +44,7 @@
 - [x] Add GitHub workflow env variables for `XAI_MODEL` and `BASE_URL`.
 - [x] Add documentation explaining why xAI was selected.
 - [x] Add an interactive HTML visualizer with version tabs.
+- [x] Add animated visualizer playback for the self-healing workflow.
 - [x] Centralize self-healing behavior into a shared framework service.
 - [x] Add a Playwright `healing` fixture so tests do not instantiate the healer directly.
 - [ ] Add a code comment explaining why the final Task 3 option was selected over the other assignment option.

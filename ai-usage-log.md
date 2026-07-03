@@ -8,3 +8,4 @@
 | ChatGpt 5.5 Light using Codex | Task 2 prompt engineering and generated test-case preparation | Created raw module prompts, generated Login/Dashboard/API test-case specs, added module prompt-iteration notes, and updated README/TODO for Task 2. |
 | ChatGpt 5.5 Light using Codex | Task 3 v1 naive self-healing implementation | Added xAI selector-repair client, DOM snapshot capture, naive self-healing locator, demo page/test, GitHub Actions workflow, environment examples, documentation, and visualizer. |
 | ChatGpt 5.5 Light using Codex | Task 3 v2 centralized self-healing framework | Added a framework-level self-healing service, Playwright fixture, centralized demo test, docs, workflow update, and visualizer updates. |
+| ChatGpt 5.5 Light using Codex | Self-healing visualizer workflow improvement | Converted the visualizer from static explanation into animated Play/Step/Reset workflow playback for v1 and v2. |

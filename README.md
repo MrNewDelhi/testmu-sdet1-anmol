@@ -36,6 +36,7 @@ ChatGpt 5.5 Light using Codex
 - Added an interactive HTML visualizer for the self-healing approach.
 - Added sample v1 xAI selector-repair output in `sample-output/self-healing-v1.json`.
 - Added centralized Task 3 v2 framework layer with `SelfHealingService` and a shared Playwright `healing` fixture.
+- Upgraded the visualizer from static tabs to animated workflow playback for naive v1 and centralized v2.
 
 ## Planned Structure
 
@@ -132,3 +133,5 @@ npm run serve:demo
 ```
 
 Then visit `http://127.0.0.1:9323/self-healing-visualizer.html`.
+
+The visualizer includes Play, Step, and Reset controls to show the locator failure, DOM capture, xAI request, selector repair, validation, and evidence logging sequence.
