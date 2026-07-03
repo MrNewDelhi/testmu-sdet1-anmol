@@ -11,6 +11,8 @@ interface FailureContext {
   url: string;
   domSnapshot: string;
   screenshotBase64?: string;
+  apiRequest?: string;
+  apiResponse?: string;
 }
 
 // Stored outside test-results (which Playwright wipes at the start of each run)
@@ -87,6 +89,8 @@ export default class BatchedFailureAnalysisReporter implements Reporter {
           url: lead.url,
           domSnapshot: lead.domSnapshot,
           screenshotBase64: lead.screenshotBase64,
+          apiRequest: lead.apiRequest,
+          apiResponse: lead.apiResponse,
           priorStatus,
           testFileChanged,
           changedFiles: changedFiles.slice(0, 20),

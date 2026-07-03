@@ -131,6 +131,16 @@ added — the git signal supplies the product-intent context an image never coul
 See `src/reporters/BatchedFailureAnalysisReporter.ts` and the cascade demo
 (`npm run test:self-healing:v9`).
 
+### v10: raw API request/response for API failures
+
+For an API-level failure the DOM and screenshot are useless; the HTTP exchange is
+the whole story. `RecordingApi` wraps Playwright's `APIRequestContext` and records
+the last request/response; the `apiFailureAnalysis` fixture sends the raw request
+(method, URL, body) and response (status, body) instead of page state. Demonstrated
+live: a test asserting `POST /booking` returns 500 (it returns 200) is correctly
+called `test-bug` because xAI can see the request succeeded — high-signal context
+that needs no git enrichment. See `src/fixtures/apiFailureAnalysisFixtures.ts`.
+
 ## Why Generated Cases Now Help
 
 The generated Task 2 cases are not default executable tests anymore. They are structured design artifacts with Playwright-style drafts and self-healing notes. This keeps `npm test` clean while preserving the interview evidence for:

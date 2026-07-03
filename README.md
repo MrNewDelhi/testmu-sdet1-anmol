@@ -80,6 +80,7 @@ The self-healing framework evolves across six versions, each with a visualizer t
 | v7 | Failure Explainer (Task 3 Option A) — analyze failures, attach to report | `npm run test:self-healing:v7` |
 | v8 | Screenshot attached to the failure request (multimodal) | `npm run test:self-healing:v7` (now sends a screenshot) |
 | v9 | Mode B — batched post-run analysis, deduped + enriched with history/git | `npm run test:self-healing:v9` |
+| v10 | API failures — send the raw HTTP request + response (no DOM) | `npm run test:self-healing:v7` / `:v9` |
 
 Run every version plus the framework unit tests with `npm run test:self-healing`. Open the animated version tabs with `npm run serve:demo`.
 

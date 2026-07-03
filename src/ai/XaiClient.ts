@@ -41,7 +41,9 @@ export interface FailureAnalysisRequest {
   url: string;
   /** Compacted interactive DOM snapshot (page state). */
   domSnapshot: string;
-  /** Optional API status/body for API-level failures. */
+  /** Optional raw API request (method, url, body) for API-level failures (v10). */
+  apiRequest?: string;
+  /** Optional raw API status/body/headers for API-level failures. */
   apiResponse?: string;
   /** Optional base64 PNG of the page at failure time (v8, multimodal). */
   screenshotBase64?: string;
@@ -120,7 +122,7 @@ export class XaiClient {
           role: 'system',
           content:
             'You are a senior SDET triaging an automated test failure. Given the error, the '
-            + 'page state, an optional screenshot of the page, and any API response, explain in plain '
+            + 'page state, an optional screenshot of the page, and any raw API request/response, explain in plain '
             + 'English what broke and suggest a concrete fix. Classify the failure as exactly one of: '
             + 'product-bug (a real defect in the app), environment (infra/network/config), flaky '
             + '(timing/nondeterminism), or test-bug (the test/assertion is wrong). '

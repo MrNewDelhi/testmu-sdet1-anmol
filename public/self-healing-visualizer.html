@@ -522,6 +522,7 @@
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v7" id="tab-v7">v7 · Failure Explainer</button>
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v8" id="tab-v8">v8 · Screenshot (vision)</button>
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v9" id="tab-v9">v9 · Batched + enriched</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v10" id="tab-v10">v10 · API req/response</button>
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-roadmap" id="tab-roadmap">Roadmap</button>
       </div>
 
@@ -947,6 +948,46 @@ drift     -> cached selector fails  -> re-heal</pre>
         </div>
       </section>
 
+      <!-- ================= V10 ================= -->
+      <section id="panel-v10" role="tabpanel" aria-labelledby="tab-v10" hidden>
+        <div class="summary">
+          <article class="card"><span class="kicker amber">Problem</span><strong>No DOM for APIs</strong><p>An API failure has no page — the DOM/screenshot are useless.</p></article>
+          <article class="card"><span class="kicker blue">Capture</span><strong>The HTTP exchange</strong><p>A recording <code>api</code> wrapper stores the last request + response.</p></article>
+          <article class="card"><span class="kicker green">Send</span><strong>Raw req + resp</strong><p>Method, URL, body, status, and response body go to xAI.</p></article>
+          <article class="card"><span class="kicker green">Result</span><strong>High signal</strong><p>The exchange usually makes the verdict obvious.</p></article>
+        </div>
+
+        <div class="shell">
+          <div class="topbar">
+            <div>
+              <strong>API failure analysis — the exchange is the whole story</strong>
+              <p class="status">A 200 with a valid body under a "expected 500" assertion is unambiguously a test-bug.</p>
+            </div>
+          </div>
+          <div class="stage" style="grid-template-columns: 1fr 1fr;">
+            <article class="node">
+              <h3>Sent to xAI</h3>
+              <pre class="code">apiRequest:
+  POST /booking
+  { "firstname": "Anmol", "totalprice": 180, ... }
+
+apiResponse:
+  HTTP 200 OK
+  { "bookingid": 42, "booking": { ... } }
+
+error: expect(status).toBe(500)  received 200</pre>
+            </article>
+            <article class="node">
+              <h3>xAI verdict</h3>
+              <pre class="code">category: test-bug
+summary: POST /booking succeeds with 200 + booking JSON,
+         but the test asserts 500.
+fix: assert 200 (the create worked), not 500.</pre>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <!-- ================= ROADMAP ================= -->
       <section id="panel-roadmap" role="tabpanel" aria-labelledby="tab-roadmap" hidden>
         <div class="shell">
@@ -961,6 +1002,7 @@ drift     -> cached selector fails  -> re-heal</pre>
               <li><strong>v7:</strong> Failure Explainer (Task 3 Option A) — on failure, send page state + error to xAI and attach a categorized explanation to the report.</li>
               <li><strong>v8:</strong> attach a page screenshot to the failure request (multimodal), so the model sees the render, not just the DOM text.</li>
               <li><strong>v9 (mode B):</strong> post-run reporter that batches + dedups failures and enriches each with run history + git diff, so classification is grounded rather than guessed.</li>
+              <li><strong>v10:</strong> for API failures, capture and send the raw HTTP request + response (there is no DOM to send).</li>
             </ul>
             <h3>Still planned</h3>
             <ul>
