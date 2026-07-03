@@ -5,3 +5,5 @@ test-results/*
 .env
 .DS_Store
 *.log
+src/agents/self-healing/*.jsonl
+src/agents/self-healing/*.json

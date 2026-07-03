@@ -1,0 +1,43 @@
+name: Self-Healing v1
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+env:
+  XAI_MODEL: grok-4.3
+  BASE_URL: http://127.0.0.1:9323
+
+jobs:
+  self-healing-v1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run self-healing v1 demo
+        env:
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+        run: npm run test:self-healing:v1
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          if-no-files-found: ignore

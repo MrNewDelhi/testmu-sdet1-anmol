@@ -5,13 +5,16 @@
   "description": "TestMu SDET-1 assessment scaffold using TypeScript and Playwright.",
   "scripts": {
     "test": "playwright test",
+    "test:self-healing:v1": "playwright test tests/demo/self-healing-v1-demo.spec.ts",
     "test:login": "playwright test tests/login",
     "test:dashboard": "playwright test tests/dashboard",
-    "test:api": "playwright test tests/api"
+    "test:api": "playwright test tests/api",
+    "serve:demo": "tsx scripts/serve-public.ts"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",
     "@types/node": "^26.1.0",
+    "dotenv": "^17.4.2",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3"
   }

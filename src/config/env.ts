@@ -1,0 +1,15 @@
+import 'dotenv/config';
+
+export const env = {
+  baseUrl: process.env.BASE_URL ?? 'http://127.0.0.1:9323',
+  xaiApiKey: process.env.XAI_API_KEY ?? '',
+  xaiModel: process.env.XAI_MODEL ?? 'grok-4.3',
+};
+
+export function requireXaiApiKey(): string {
+  if (!env.xaiApiKey) {
+    throw new Error('XAI_API_KEY is required for the v1 self-healing demo.');
+  }
+
+  return env.xaiApiKey;
+}

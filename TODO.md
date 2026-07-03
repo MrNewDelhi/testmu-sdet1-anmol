@@ -34,13 +34,19 @@
 
 ## Task 3: LLM Integration in Test Framework
 
-- [ ] Pick one LLM integration option:
-  - [ ] Option A: Failure Explainer
-  - [ ] Option B: Flaky Test Classifier
-- [ ] Implement working code with a real LLM API call.
-- [ ] Add a code comment explaining why the chosen option was selected over the other.
-- [ ] Attach or output the LLM response inside test results.
-- [ ] Add a sample output showing the LLM response.
+- [x] Pick an LLM integration direction:
+  - [x] Naive v1 self-healing locator demo using xAI.
+  - [ ] Finalize whether this becomes the submitted Task 3 option or supports the failure-explainer path.
+- [x] Create a deliberately wrong locator scenario.
+- [x] Capture DOM context and send it to xAI in a try/catch healing flow.
+- [x] Validate the returned selector against the page before continuing.
+- [x] Store `XAI_API_KEY` as a GitHub repository secret.
+- [x] Add GitHub workflow env variables for `XAI_MODEL` and `BASE_URL`.
+- [x] Add documentation explaining why xAI was selected.
+- [x] Add an interactive HTML visualizer with version tabs.
+- [ ] Add a code comment explaining why the final Task 3 option was selected over the other assignment option.
+- [x] Attach or output the LLM response inside v1 test results.
+- [x] Add a sample output showing the LLM response.
 
 ## Final Submission
 

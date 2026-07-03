@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
@@ -14,7 +15,7 @@ export default defineConfig({
     ['json', { outputFile: 'test-results/results.json' }]
   ],
   use: {
-    baseURL: process.env.BASE_URL ?? 'https://example.com',
+    baseURL: process.env.BASE_URL ?? 'http://127.0.0.1:9323',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure'
@@ -24,5 +25,11 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] }
     }
-  ]
+  ],
+  webServer: {
+    command: 'npm run serve:demo',
+    url: process.env.BASE_URL ?? 'http://127.0.0.1:9323',
+    reuseExistingServer: !process.env.CI,
+    timeout: 10_000
+  }
 });

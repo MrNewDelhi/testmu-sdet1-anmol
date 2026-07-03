@@ -1,0 +1,8 @@
+{
+  "selector": "#actual-login-submit",
+  "confidence": 0.95,
+  "reason": "Stable id present on the only submit button inside the login form per DOM snapshot",
+  "brokenSelector": "#submit-login-button-does-not-exist",
+  "intent": "The primary submit button for the login form",
+  "source": "xai"
+}
