@@ -44,6 +44,8 @@
 - [x] Add GitHub workflow env variables for `XAI_MODEL` and `BASE_URL`.
 - [x] Add documentation explaining why xAI was selected.
 - [x] Add an interactive HTML visualizer with version tabs.
+- [x] Centralize self-healing behavior into a shared framework service.
+- [x] Add a Playwright `healing` fixture so tests do not instantiate the healer directly.
 - [ ] Add a code comment explaining why the final Task 3 option was selected over the other assignment option.
 - [x] Attach or output the LLM response inside v1 test results.
 - [x] Add a sample output showing the LLM response.

@@ -1,0 +1,9 @@
+{
+  "selector": "#actual-login-submit",
+  "confidence": 0.95,
+  "reason": "Stable ID present on the submit button inside the login form; direct match to intent",
+  "brokenSelector": "#submit-login-button-does-not-exist",
+  "intent": "The primary submit button for the login form",
+  "source": "xai",
+  "version": "v2-centralized"
+}

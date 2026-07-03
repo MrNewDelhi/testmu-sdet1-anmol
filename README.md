@@ -4,7 +4,7 @@ This repository contains the scaffold for the TestMu AI SDET-1 assessment.
 
 ## Current Status
 
-Task 3 v1 is in progress: the project now contains the initial scaffold, generated Task 2 test-case material, and a naive xAI-powered self-healing locator demo.
+Task 3 v2 is in progress: the project now contains the initial scaffold, generated Task 2 test-case material, a naive xAI-powered self-healing locator demo, and a centralized self-healing framework fixture.
 
 ## AI Model Used
 
@@ -35,6 +35,7 @@ ChatGpt 5.5 Light using Codex
 - Added a demo test that deliberately uses a wrong locator, sends DOM context to xAI, validates the returned selector, and continues.
 - Added an interactive HTML visualizer for the self-healing approach.
 - Added sample v1 xAI selector-repair output in `sample-output/self-healing-v1.json`.
+- Added centralized Task 3 v2 framework layer with `SelfHealingService` and a shared Playwright `healing` fixture.
 
 ## Planned Structure
 
@@ -48,6 +49,7 @@ testmu-sdet1-anmol/
     ai/
     config/
     fixtures/
+    framework/
     pages/
     pipeline/
     reporters/
@@ -108,6 +110,20 @@ Run the naive v1 demo:
 ```bash
 npm run test:self-healing:v1
 ```
+
+## Centralized Self-Healing v2 Demo
+
+The v2 demo uses the shared framework fixture instead of creating a healer inside the test:
+
+```bash
+npm run test:self-healing:v2
+```
+
+Framework entry points:
+
+- `src/framework/self-healing/SelfHealingService.ts`
+- `src/fixtures/healingFixtures.ts`
+- `tests/demo/self-healing-v2-centralized.spec.ts`
 
 Open the visualizer locally:
 

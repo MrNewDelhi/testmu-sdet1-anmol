@@ -144,7 +144,7 @@
     <main>
       <div class="tabs" role="tablist" aria-label="Self-healing versions">
         <button class="tab" role="tab" aria-selected="true" aria-controls="v1" id="tab-v1">v1 Naive</button>
-        <button class="tab" role="tab" aria-selected="false" aria-controls="v2" id="tab-v2">v2 Guardrails</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="v2" id="tab-v2">v2 Centralized</button>
         <button class="tab" role="tab" aria-selected="false" aria-controls="v3" id="tab-v3">v3 Reporting</button>
       </div>
 
@@ -193,10 +193,46 @@
       </section>
 
       <section class="version" id="v2" role="tabpanel" aria-labelledby="tab-v2" hidden>
-        <article class="panel">
-          <h2>Planned v2</h2>
-          <p>Add confidence thresholds, scoped healing, cache validation, and refusal behavior when the target element is genuinely missing.</p>
-        </article>
+        <div class="grid">
+          <article class="step">
+            <span class="badge green">Framework</span>
+            <strong>Shared service</strong>
+            <p><code>SelfHealingService</code> owns DOM capture, xAI repair, validation, and logging.</p>
+          </article>
+          <article class="step">
+            <span class="badge green">Fixture</span>
+            <strong>One test API</strong>
+            <p>Tests import <code>healing</code> from a Playwright fixture instead of creating helpers manually.</p>
+          </article>
+          <article class="step">
+            <span class="badge green">Evidence</span>
+            <strong>Central attachment</strong>
+            <p>Heal events are attached to Playwright output from the fixture after the test completes.</p>
+          </article>
+          <article class="step">
+            <span class="badge amber">Next</span>
+            <strong>Guardrails later</strong>
+            <p>Confidence gates, cache validation, and refusal rules are planned for the next version.</p>
+          </article>
+        </div>
+
+        <div class="flow">
+          <article class="panel">
+            <h2>Test Code</h2>
+            <pre>const loginButton = await healing.locator(
+  '#submit-login-button-does-not-exist',
+  'The primary submit button for the login form',
+);</pre>
+          </article>
+          <article class="panel">
+            <h2>Centralized Output</h2>
+            <pre>{
+  "selector": "#actual-login-submit",
+  "source": "xai",
+  "version": "v2-centralized"
+}</pre>
+          </article>
+        </div>
       </section>
 
       <section class="version" id="v3" role="tabpanel" aria-labelledby="tab-v3" hidden>

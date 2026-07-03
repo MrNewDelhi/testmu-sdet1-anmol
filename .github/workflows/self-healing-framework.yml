@@ -1,4 +1,4 @@
-name: Self-Healing v1
+name: Self-Healing Framework
 
 on:
   workflow_dispatch:
@@ -11,7 +11,7 @@ env:
   BASE_URL: http://127.0.0.1:9323
 
 jobs:
-  self-healing-v1:
+  self-healing-framework:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,6 +33,11 @@ jobs:
         env:
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
         run: npm run test:self-healing:v1
+
+      - name: Run centralized self-healing v2 demo
+        env:
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+        run: npm run test:self-healing:v2
 
       - name: Upload Playwright report
         if: always()
