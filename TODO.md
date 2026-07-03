@@ -10,27 +10,27 @@
 
 ## Task 2: Prompt Engineering for Test Generation
 
-- [ ] Create `prompts.md` with every raw prompt exactly as written.
-- [ ] Generate Login test cases covering:
-  - [ ] Valid login
-  - [ ] Invalid credentials
-  - [ ] Forgot password
-  - [ ] Session expiry
-  - [ ] Brute-force lockout
-- [ ] Generate Dashboard test cases covering:
-  - [ ] Widget loading
-  - [ ] Data accuracy
-  - [ ] Filter and sort behavior
-  - [ ] Responsive layout
-  - [ ] Permission-based visibility
-- [ ] Generate REST API test cases covering:
-  - [ ] Auth token validation
-  - [ ] CRUD operations
-  - [ ] Error handling for 4xx and 5xx responses
-  - [ ] Rate limiting
-  - [ ] Schema validation
-- [ ] Add generated test cases in the selected framework format.
-- [ ] Add a short 3 to 5 line note per module explaining what did not work first time and what changed.
+- [x] Create `prompts.md` with every raw prompt exactly as written.
+- [x] Generate Login test cases covering:
+  - [x] Valid login
+  - [x] Invalid credentials
+  - [x] Forgot password
+  - [x] Session expiry
+  - [x] Brute-force lockout
+- [x] Generate Dashboard test cases covering:
+  - [x] Widget loading
+  - [x] Data accuracy
+  - [x] Filter and sort behavior
+  - [x] Responsive layout
+  - [x] Permission-based visibility
+- [x] Generate REST API test cases covering:
+  - [x] Auth token validation
+  - [x] CRUD operations
+  - [x] Error handling for 4xx and 5xx responses
+  - [x] Rate limiting
+  - [x] Schema validation
+- [x] Add generated test cases in the selected framework format.
+- [x] Add a short 3 to 5 line note per module explaining what did not work first time and what changed.
 
 ## Task 3: LLM Integration in Test Framework
 

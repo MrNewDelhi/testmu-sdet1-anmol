@@ -4,7 +4,7 @@ This repository contains the scaffold for the TestMu AI SDET-1 assessment.
 
 ## Current Status
 
-Task 1 is complete: the project has been initialized with a clean TypeScript and Playwright-oriented folder structure before writing tests.
+Task 2 is complete: the project now contains the initial scaffold plus generated test-case material for Login, Dashboard, and REST API coverage.
 
 ## AI Model Used
 
@@ -28,6 +28,9 @@ ChatGpt 5.5 Light using Codex
 - Added `TODO.md` with the complete assignment task breakdown.
 - Added initial project configuration files for the planned framework.
 - Added `ai-usage-log.md` to track AI usage during the assessment.
+- Added Task 2 raw prompts in `prompts.md`.
+- Added generated Playwright test-case specs in `tests/generated/`.
+- Added module notes explaining what changed after the first prompt attempt.
 
 ## Planned Structure
 
@@ -54,5 +57,22 @@ testmu-sdet1-anmol/
 
 ## Next Steps
 
-- Task 2: create raw prompts and generated test cases for Login, Dashboard, and REST API.
 - Task 3: wire a real LLM call into the test framework and publish sample output.
+
+## Task 2 Output
+
+The generated test cases are stored as reviewed Playwright `test.fixme` specs:
+
+- `tests/generated/login.generated.spec.ts`
+- `tests/generated/dashboard.generated.spec.ts`
+- `tests/generated/api.generated.spec.ts`
+
+They are intentionally marked `fixme` at this stage because Task 2 asks for generated test cases. The next implementation pass will convert selected cases into executable automation.
+
+## Run Checks
+
+```bash
+npm install
+npx tsc --noEmit
+npm test -- --list
+```
