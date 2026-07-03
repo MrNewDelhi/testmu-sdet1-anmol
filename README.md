@@ -1,199 +1,172 @@
-# TestMu SDET-1 Assessment
+# TestMu SDET-1 — AI-Native Quality Engineering
 
-This repository contains the scaffold for the TestMu AI SDET-1 assessment.
+An AI-native test framework built for the TestMu SDET-1 challenge. Beyond the required tasks, it grows a **self-healing locator engine** and a **failure-intelligence pipeline** across 11 iterations — each one a real, tested step, wired to a live LLM (xAI Grok), with a **deterministic-first, privacy-first** design.
 
-## Current Status
+- **Stack:** TypeScript · Playwright · SQLite (`node:sqlite`) · xAI Grok
+- **Live demos:** `npm run test:self-healing` (all versions) · `npm run serve:demo` (interactive visualizer)
+- **The interesting part:** an LLM is used as a *judge and last resort*, not a hammer — deterministic code and a cache do the cheap work, guardrails gate the model's output, and user data is redacted before it ever leaves the box.
 
-Task 3 v2 is in progress: the project now contains the initial scaffold, generated Task 2 test-case material, a naive xAI-powered self-healing locator demo, and a centralized self-healing framework fixture.
+---
 
-## AI Model Used
+## The pipeline
 
-ChatGpt 5.5 Light using Codex
+Two cooperating pipelines. The first keeps tests *running* when the UI drifts; the second explains *why* they broke when they shouldn't.
 
-## What Has Been Done
+### 1 · Self-healing locators (v1–v6)
 
-- Created the main repository folder: `testmu-sdet1-anmol`.
-- Copied the original assignment PDF into the repository.
-- Chose TypeScript with Playwright as the automation stack.
-- Created a maintainable folder structure for:
-  - Page objects
-  - Test fixtures
-  - AI integration code
-  - Test reporting
-  - Login tests
-  - Dashboard tests
-  - API tests
-  - Generated tests
-  - Documentation and sample outputs
-- Added `TODO.md` with the complete assignment task breakdown.
-- Added initial project configuration files for the planned framework.
-- Added `ai-usage-log.md` to track AI usage during the assessment.
-- Added Task 2 raw prompts in `prompts.md`.
-- Added generated Playwright test-case specs in `tests/generated/`.
-- Added module notes explaining what changed after the first prompt attempt.
-- Added naive Task 3 v1 self-healing locator code.
-- Added a demo test that deliberately uses a wrong locator, sends DOM context to xAI, validates the returned selector, and continues.
-- Added an interactive HTML visualizer for the self-healing approach.
-- Added sample v1 xAI selector-repair output in `sample-output/self-healing-v1.json`.
-- Added centralized Task 3 v2 framework layer with `SelfHealingService` and a shared Playwright `healing` fixture.
-- Upgraded the visualizer from static tabs to animated workflow playback for naive v1 and centralized v2.
-- Automated all 26 generated Task 2 cases using POM-based module specs, including catalog data-accuracy and filter/sort coverage.
-
-## Planned Structure
-
-```text
-testmu-sdet1-anmol/
-  docs/
-  public/
-  sample-output/
-  scripts/
-  src/
-    ai/
-    config/
-    fixtures/
-    framework/
-    pages/
-    pipeline/
-    reporters/
-    utils/
-  tests/
-    api/
-    dashboard/
-    generated/
-    login/
-    demo/
-  test-results/
+```mermaid
+flowchart TD
+  A["Locator matches 0 elements"] --> B{"SQLite cache hit?"}
+  B -- "yes · re-validate on live DOM" --> USE["Use locator ✓"]
+  B -- "miss" --> C{"Deterministic resolve<br/>(contract / unique keywords)"}
+  C -- "unique local match" --> D["Build stable selector<br/>id ▸ data-testid ▸ name ▸ form+type<br/>💸 0 tokens"]
+  C -- "ambiguous" --> E["Capture interactive DOM<br/>→ xAI selector repair"]
+  E --> F{"Confidence ≥ 0.5<br/>AND target contract satisfied?"}
+  F -- "no" --> R["Refuse — don't click a guess"]
+  F -- "yes" --> G["Cache top-3 attribute-diverse locators"]
+  D --> G
+  G --> USE
 ```
 
-## Next Steps
+### 2 · Failure intelligence (v7–v11, Task 3 Option A)
 
-The self-healing framework evolves across six versions, each with a visualizer tab and a demo script:
+```mermaid
+flowchart TD
+  A["Test fails · final retry only"] --> B["Capture context:<br/>error · DOM · screenshot · API req/resp"]
+  B --> P["🔒 Redact PII<br/>deterministic patterns + local LLM judge"]
+  P --> M{"Mode"}
+  M -- "A · per test" --> X["xAI explain now"]
+  M -- "B · post-run" --> Y["Batch + dedup by error signature<br/>enrich: prior-run status · git diff · cascade size"]
+  Y --> X
+  X --> Z["category · root cause · suggested fix<br/>→ attached to the report"]
+```
 
-| Version | Idea | Demo |
+---
+
+## Concepts worth highlighting
+
+| Concept | Where it lives | Why it matters |
 | --- | --- | --- |
-| v1 | Naive xAI locator repair | `npm run test:self-healing:v1` |
-| v2 | Centralized service + fixture | `npm run test:self-healing:v2` |
-| v3 | Confidence gate + SQLite cache | `npm run test:self-healing:v3` |
-| v4 | Target-contract disambiguation (refuse wrong element) | `npm run test:self-healing:v4` |
-| v5 | Deterministic-first (skip the LLM on easy breaks) | `npm run test:self-healing:v5` |
-| v6 | Multi-locator cache (survive single-attribute drift) | `npm run test:self-healing:v6` |
-| v7 | Failure Explainer (Task 3 Option A) — analyze failures, attach to report | `npm run test:self-healing:v7` |
-| v8 | Screenshot attached to the failure request (multimodal) | `npm run test:self-healing:v7` (now sends a screenshot) |
-| v9 | Mode B — batched post-run analysis, deduped + enriched with history/git | `npm run test:self-healing:v9` |
-| v10 | API failures — send the raw HTTP request + response (no DOM) | `npm run test:self-healing:v7` / `:v9` |
-| v11 | Redact PII before sending to the remote LLM (patterns + local judge) | `npx playwright test tests/framework/redact.spec.ts` |
+| **🧠 LLM as a Judge** | Confidence scoring caps the model's self-reported number with measured signals; failure **classification** (product-bug / environment / flaky / test-bug); a **local** model judges residual PII. | The model *ranks and rules*, it doesn't get blind trust. Every LLM output is verified or bounded. |
+| **🪝 Hooks & MITM** | Auto-fixtures wrap the test lifecycle; `RecordingApi` sits in front of `APIRequestContext` (a man-in-the-middle on HTTP); `captureInteractiveDom` intercepts page state. | Context is captured transparently — tests don't change, the framework observes. |
+| **💸 Token economics** | Deterministic-first resolution (v5), SQLite locator cache (v3) + multi-locator fallback (v6), post-run dedup of cascades (v9), final-attempt-only + per-run budget. | The LLM is the *expensive last resort*. Most breaks cost **0 tokens**; cascades collapse to one call. |
+| **🔒 User-data security** | PII redaction over the full text (v11): patterns + **field-aware** secret rules; password values dropped at capture; the PII judge runs **locally** so data isn't shipped off-box just to detect it. | Nothing leaves for the remote LLM until it's scrubbed. Deterministic redaction is exhaustive on known shapes. |
+| **🔭 Observability** | Every xAI call is logged to `xai-calls.jsonl` (latency, HTTP status, **token usage + cost**, error, `hasScreenshot`). `XAI_DEBUG=1` echoes to stderr. | Full audit trail for debugging and cost tracking of a non-deterministic dependency. |
+| **🛡️ Guardrails & refusal** | Confidence threshold, target-contract validation (role/type/ancestor), refuse-on-ambiguity, no-key graceful skip. | A confident-but-wrong heal (the header link vs the submit) is *refused*, not clicked. |
 
-Run every version plus the framework unit tests with `npm run test:self-healing`. Open the animated version tabs with `npm run serve:demo`.
+---
 
-**xAI call log:** every real xAI call (selector repair and failure analysis) is routed through one method in `XaiClient` that appends a JSONL line to `src/agents/self-healing/xai-calls.jsonl` — timestamp, kind, model, latency, HTTP status, request size, token usage, and any error — for debugging and cost tracking (gitignored). Set `XAI_DEBUG=1` to also echo each call to stderr.
+## Evolution — one tested step at a time
 
-### v7 — Failure Explainer (Task 3, Option A)
+Each version has an interactive visualizer tab and a runnable demo.
 
-This is the assignment's core Task 3 deliverable: a real xAI call wired into the framework. When a test fails, an auto-fixture captures the page state (compacted DOM), URL, and assertion error, sends them to xAI, and attaches a plain-English explanation with a **category** (`product-bug` / `environment` / `flaky` / `test-bug`), root cause, and suggested fix to the report.
+| # | Version | Idea | Demo |
+| --- | --- | --- | --- |
+| v1 | Naive | broken locator → xAI repair → validate → continue | `npm run test:self-healing:v1` |
+| v2 | Centralized | `SelfHealingService` + shared `healing` fixture (no per-test wiring) | `npm run test:self-healing:v2` |
+| v3 | Confidence + Cache | programmatic confidence gate (refuse < 0.5) + SQLite cache (call xAI once) | `npm run test:self-healing:v3` |
+| v4 | Disambiguation | target contract; refuse the confident-but-wrong element (output verification) | `npm run test:self-healing:v4` |
+| v5 | Deterministic-first | rebuild the locator locally; escalate to the LLM only when ambiguous | `npm run test:self-healing:v5` |
+| v6 | Multi-locator | cache top-3 attribute-diverse locators; survive single-attribute drift | `npm run test:self-healing:v6` |
+| v7 | Failure Explainer | on failure → page state + error → xAI → categorized explanation on the report | `npm run test:self-healing:v7` |
+| v8 | Vision | attach a page screenshot (multimodal), so the model sees the render | `npm run test:self-healing:v7` |
+| v9 | Batched + enriched | post-run reporter: dedup + enrich with run history & git diff | `npm run test:self-healing:v9` |
+| v10 | API req/response | for API failures, send the raw HTTP exchange (no DOM) | `npm run test:self-healing:v7` / `:v9` |
+| v11 | PII redaction | scrub context before the remote LLM: patterns + field-aware + local judge | `npx playwright test tests/framework/redact.spec.ts` |
 
-- Trigger discipline: only on a genuine failure, and only on the **final** retry (so a flake that passes on retry is never analyzed), with a per-run budget and error-signature dedup, and a graceful skip when `XAI_API_KEY` is unset.
-- `npm run test:self-healing:v7` runs a deliberately-failing demo (expected to fail) with a custom `FailureAnalysisReporter` that writes `playwright-report/failure-analysis.html` + `.json`. A committed sample is at `sample-output/failure-analysis.json`.
-- The always-green `tests/framework/failure-explainer.spec.ts` exercises the real xAI call on a simulated failure so CI covers the integration without a red test.
-- **v8 (multimodal):** the fixture also captures a page screenshot and sends it as an `image_url` content part, so the model sees the actual render (overlays, spinners, layout breakage), not just the DOM text. Uses `XAI_VISION_MODEL` (defaults to `XAI_MODEL`); the live call is covered by `tests/framework/failure-explainer-vision.spec.ts`. Note: a screenshot sharpens the *description* but cannot resolve product-intent ambiguity (whether a missing feature is supposed to exist) — that needs run history / spec, which is mode B's job.
-**v9 (mode B)** moves the LLM call out of the fixture and into a post-run reporter (`BatchedFailureAnalysisReporter`). The fixture only stashes the raw failure context; after the run the reporter:
-- **dedups** failures by error signature (a cascade of N tests with one root cause becomes one call, and the cascade size becomes a signal);
-- **enriches** each group with the test's **previous-run status** (persisted across runs), whether its **file was recently changed** (git), and the run's changed files;
-- feeds those as priors so the classification is grounded, not guessed.
+Run everything (all versions + framework unit tests): `npm run test:self-healing`.
 
-Run `npm run test:self-healing:v9` (mode B; `FAILURE_ANALYSIS_MODE=b`). In the demo this is visible: a newly-added test file is classified **test-bug** (git shows it just changed), while an unchanged committed test failing the same way stays **product-bug** — the exact `product-bug`/`test-bug` gap from v7/v8, now resolved by context.
+### The payoff, shown live
 
-**v10 (API failures):** for API-level tests the DOM/screenshot are useless, so use the `api` fixture (a recording `APIRequestContext` wrapper) — on failure the raw request (method/url/body) and response (status/body) are sent instead. In the demo, a test asserting `POST /booking` returns 500 (it returns 200) is correctly called **test-bug** because xAI can see the request succeeded.
+- **v4:** a header nav link and the form submit both read "login"; the contract *refuses* the wrong one instead of clicking it.
+- **v5/v6:** the common break resolves **locally with 0 tokens**, and if the id is later renamed the cached `data-testid` locator heals it — still no LLM call.
+- **v9:** the *same* failure xAI called `product-bug` in v7/v8 is correctly reclassified **`test-bug`** once the git signal shows the test file just changed — closing the "context gap" that an image alone can't.
+- **v10:** an "expected 500, got 200" API test is correctly called `test-bug` because the model sees the request actually succeeded.
+- **v11:** a `{"password":"hunter2"}` in the context becomes `{"password":"[REDACTED_SECRET]"}` before anything is sent.
 
-**v11 (PII redaction):** every free-text field is redacted before it leaves for the remote LLM. It is **pattern-based over the full text** (not truncation): deterministic regex for the well-shaped PII (email, card/Luhn, SSN, JWT, token, API key, phone, public IP) plus **field-aware** rules that redact the value of sensitive fields (`password`, `token`, `cvv`, …) whatever its shape — a password like `hunter2` has no pattern, so it's caught by its field, and password-field values are also dropped at DOM-capture time. An optional small **local model** (`LOCAL_LLM_URL` / `PII_JUDGE_MODEL`, e.g. Ollama) acts as an LLM-judge for the fuzzy residue (names, addresses); unset = deterministic-only. See `src/framework/privacy/redact.ts`.
+---
 
-- Task 3 remaining: v7 mode B (batched post-run reporter), destructive-action refusal allow-list, and heal-trend reporting.
-- Task 3 final: publish sample output and reporting artifacts.
-
-## Task 2 Output
-
-The generated test cases are stored as reviewed Playwright-style artifacts:
-
-- `tests/generated/login.generated.ts`
-- `tests/generated/dashboard.generated.ts`
-- `tests/generated/api.generated.ts`
-
-The design artifacts are intentionally excluded from Playwright collection, while the executable module specs are included in `npm test`. Use `npm run test:generated:list` to review the generated case inventory.
-
-Generation and Playwright MCP exploration notes are documented in `docs/generated-test-cases.md`.
-
-Executable generated test specs:
-
-- `tests/login/generated-login.spec.ts`
-- `tests/dashboard/generated-dashboard.spec.ts`
-- `tests/api/generated-api.spec.ts`
-
-Run all 26 generated executable cases (Login 7, Dashboard 8, REST API 11):
-
-```bash
-npm run test:generated:run
-```
-
-The Dashboard module spans two surfaces: the post-login **My Account** page (widget loading, permission-based visibility, responsive layout, logout) and the **product listing** page (data accuracy via the results banner, and filter/sort via the price sort control), because the account page has no data grid or sort control of its own.
-
-Sample xAI repair output:
-
-```json
-{
-  "selector": "#actual-login-submit",
-  "confidence": 0.95,
-  "reason": "Stable id present on the only submit button inside the login form per DOM snapshot"
-}
-```
-
-## Run Checks
+## Quick start
 
 ```bash
 npm install
-npx tsc --noEmit
-npm test -- --list
-npm run test:generated:list
-npm run test:generated:run
+cp .env.example .env        # fill XAI_API_KEY (and optional XAI_VISION_MODEL / LOCAL_LLM_URL)
+npx tsc --noEmit            # typecheck
+npm test                    # generated Task 2 specs + self-healing framework demos
+npm run serve:demo          # open http://127.0.0.1:9323/self-healing-visualizer.html
 ```
 
-`npm test` runs the 26 executable generated module specs plus the self-healing framework demos. The non-executable generated design artifacts stay excluded through `testIgnore` so planned-case artifacts do not appear as skipped tests.
+Environment (`.env`):
 
-## Self-Healing v1 Demo
+- `XAI_API_KEY` — required for any live LLM call.
+- `XAI_MODEL` (default `grok-4.3`), `XAI_VISION_MODEL` — model + multimodal model.
+- `LOCAL_LLM_URL` / `PII_JUDGE_MODEL` — optional local model for the PII judge (e.g. Ollama). Unset ⇒ deterministic redaction only.
+- `XAI_DEBUG=1` — echo every xAI call to stderr. `FAILURE_ANALYSIS_MODE=b` — batched failure analysis.
 
-Environment:
+---
+
+## Task 2 — Prompt-engineered test generation
+
+26 executable cases across Login (7), Dashboard (8), and REST API (11):
 
 ```bash
-cp .env.example .env
-# Fill XAI_API_KEY in .env
+npm run test:generated:list   # inventory of the 26 generated cases
+npm run test:generated:run    # run them
 ```
 
-Run the naive v1 demo:
+- Raw prompts (exactly as written) live in `prompts.md`; per-module iteration notes explain what changed.
+- Design artifacts: `tests/generated/*.generated.ts` (excluded from the default run); executable specs: `tests/{login,dashboard,api}/generated-*.spec.ts`.
+- The Dashboard module spans two surfaces — the post-login **My Account** page (widgets, permission visibility, responsive, logout) and the **product listing** page (data accuracy via the results banner, filter/sort via the price control), because the account page has no data grid of its own.
+- Generation + Playwright MCP exploration notes: `docs/generated-test-cases.md`.
 
-```bash
-npm run test:self-healing:v1
+---
+
+## Task 3 — LLM integration (Option A: Failure Explainer)
+
+The core deliverable is a **real** xAI call wired into the test framework (see the failure-intelligence pipeline above). Self-healing (v1–v6) is the extra-credit foundation it grew from.
+
+- Trigger discipline: only on a genuine failure, only on the **final** retry (a flake that passes on retry is never analyzed), with a per-run budget, error-signature dedup, and a graceful no-key skip.
+- Modes: **A** analyzes at failure time (`FailureAnalysisReporter` → `playwright-report/failure-analysis.html`); **B** (`FAILURE_ANALYSIS_MODE=b`, `BatchedFailureAnalysisReporter`) analyzes after the run, deduped and enriched with run history + git diff.
+- Sample outputs are committed under `sample-output/` (`failure-analysis.json`, `self-healing-v*.json`).
+- Scenario + guardrail notes: `docs/self-healing-scenarios.md`.
+
+Key source:
+
+- `src/ai/XaiClient.ts` — the single logged entry point to xAI (repair + explain).
+- `src/framework/self-healing/` — `SelfHealingService`, `DeterministicLocator`, `LocatorCache`, `confidence`, `contract`.
+- `src/framework/failure-analysis/` — `FailureExplainer`, `RecordingApi`, `analyzeFailure`.
+- `src/framework/privacy/redact.ts` — PII redaction.
+- `src/reporters/` — `FailureAnalysisReporter` (A), `BatchedFailureAnalysisReporter` (B).
+
+---
+
+## What I'd build next
+
+- **Refusal allow-list** for destructive actions (never heal a delete/pay/submit-order without an explicit opt-in).
+- **Heal-trend reporting** — chart selector drift and heal/refuse rates across runs.
+- **Screenshot PII gating** (`PII_STRICT`) and image redaction for the vision path.
+- **Flaky classifier (Option B)** on top of the persisted run history already collected in mode B.
+
+## Repository layout
+
+```text
+src/
+  ai/                     XaiClient (logged, schema-validated LLM calls)
+  framework/
+    self-healing/         service · deterministic · cache · confidence · contract
+    failure-analysis/     explainer · recording API · shared analyzer
+    privacy/              PII redaction
+  fixtures/               POM + healing + failure-analysis fixtures
+  pages/                  page objects
+  reporters/              failure-analysis reporters (mode A / mode B)
+tests/
+  {login,dashboard,api}/  executable Task 2 specs
+  generated/              Task 2 design artifacts (excluded from default run)
+  demo/                   self-healing v1–v6 demos
+  framework/              confidence / cache / redaction / explainer unit tests
+  failure-demo/           deliberately-failing v7–v10 demos (own config)
+public/                   interactive visualizer + demo pages
+docs/ · sample-output/    notes and committed sample LLM outputs
 ```
 
-## Centralized Self-Healing v2 Demo
-
-The v2 demo uses the shared framework fixture instead of creating a healer inside the test:
-
-```bash
-npm run test:self-healing:v2
-```
-
-Framework entry points:
-
-- `src/framework/self-healing/SelfHealingService.ts`
-- `src/fixtures/healingFixtures.ts`
-- `tests/demo/self-healing-v2-centralized.spec.ts`
-
-Self-healing scenario notes are documented in `docs/self-healing-scenarios.md`.
-
-Open the visualizer locally:
-
-```bash
-npm run serve:demo
-```
-
-Then visit `http://127.0.0.1:9323/self-healing-visualizer.html`.
-
-The visualizer includes Play, Step, and Reset controls to show the locator failure, DOM capture, xAI request, selector repair, validation, and evidence logging sequence.
+`ai-usage-log.md` records every AI tool used and what it produced.
