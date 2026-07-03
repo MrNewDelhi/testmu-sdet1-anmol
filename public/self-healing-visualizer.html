@@ -632,10 +632,13 @@ await btn.click();</pre>
       <section id="panel-v3" role="tabpanel" aria-labelledby="tab-v3" hidden>
         <div class="shell">
           <div class="roadmap">
-            <h3>What v3 adds next</h3>
+            <h3>Shipped in v3</h3>
             <ul>
-              <li><strong>Confidence gate:</strong> refuse to heal below a threshold and fail loudly instead of clicking a guessed element.</li>
-              <li><strong>Selector cache:</strong> remember a repair per <code>(url, intent)</code> so the model is called once, not every run.</li>
+              <li><strong>Confidence gate:</strong> a repair is scored from <em>uniqueness</em> (matches exactly one element) and <em>selector stability</em> (id/data-testid &gt; role/text &gt; nth-child), capped by the model's own number. Below <code>0.5</code> the service refuses to heal instead of clicking a guess. <code>src/framework/self-healing/confidence.ts</code></li>
+              <li><strong>Selector cache:</strong> a SQLite cache keyed on <code>(page_key, broken_selector, intent)</code> reuses a previously healed selector so xAI is called once, not every run — still re-validated against the live DOM before use. <code>src/framework/self-healing/LocatorCache.ts</code></li>
+            </ul>
+            <h3>Still planned</h3>
+            <ul>
               <li><strong>Refusal rules:</strong> never heal destructive actions (delete, pay, submit-order) without an explicit allow-list.</li>
               <li><strong>Report trends:</strong> attach heal timelines to the HTML report and chart selector drift across runs.</li>
             </ul>

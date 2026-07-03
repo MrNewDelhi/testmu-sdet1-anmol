@@ -7,3 +7,5 @@ test-results/*
 *.log
 src/agents/self-healing/*.jsonl
 src/agents/self-healing/*.json
+src/agents/self-healing/*.sqlite
+src/agents/self-healing/*.sqlite-*

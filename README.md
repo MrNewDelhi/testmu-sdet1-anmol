@@ -67,7 +67,8 @@ testmu-sdet1-anmol/
 
 ## Next Steps
 
-- Task 3 v2: add guardrails, confidence thresholds, caching, and refusal behavior.
+- Task 3 v3 (done): programmatic confidence scoring with a refusal gate, and a SQLite locator cache so xAI is called once per break (`src/framework/self-healing/confidence.ts`, `LocatorCache.ts`).
+- Task 3 remaining: destructive-action refusal allow-list, and heal-trend reporting in the HTML report.
 - Task 3 final: publish sample output and reporting artifacts.
 
 ## Task 2 Output

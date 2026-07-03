@@ -1,0 +1,26 @@
+[
+  {
+    "selector": "#actual-login-submit",
+    "confidence": 0.95,
+    "reason": "Stable id on the only submit button inside the login form; direct match to intent",
+    "brokenSelector": "#submit-login-button-does-not-exist",
+    "intent": "The primary submit button for the login form",
+    "source": "xai",
+    "version": "v2-centralized",
+    "computedConfidence": 0.95,
+    "matchCount": 1,
+    "timestamp": "2026-07-03T18:20:11.001Z"
+  },
+  {
+    "selector": "#actual-login-submit",
+    "confidence": 0.95,
+    "reason": "Stable id on the only submit button inside the login form; direct match to intent",
+    "brokenSelector": "#submit-login-button-does-not-exist",
+    "intent": "The primary submit button for the login form",
+    "source": "cache",
+    "version": "v2-centralized",
+    "computedConfidence": 0.95,
+    "matchCount": 1,
+    "timestamp": "2026-07-03T18:20:11.244Z"
+  }
+]

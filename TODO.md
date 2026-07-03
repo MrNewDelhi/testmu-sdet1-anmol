@@ -52,6 +52,9 @@
 - [x] Centralize self-healing behavior into a shared framework service.
 - [x] Add a Playwright `healing` fixture so tests do not instantiate the healer directly.
 - [x] Document scenarios where self-healing helps and where it should refuse.
+- [x] Add programmatic confidence scoring (uniqueness + selector stability) with a refusal threshold.
+- [x] Add a SQLite locator cache keyed on (page, broken selector, intent) so xAI is called once per break.
+- [x] Prove the cache end-to-end: heal via xAI once, then serve from cache with no second call.
 - [ ] Add a code comment explaining why the final Task 3 option was selected over the other assignment option.
 - [x] Attach or output the LLM response inside v1 test results.
 - [x] Add a sample output showing the LLM response.
