@@ -111,7 +111,11 @@ Environment (`.env`):
 
 ## Task 2 — Prompt-engineered test generation
 
-26 executable cases across Login (7), Dashboard (8), and REST API (11):
+26 test cases across Login (7), Dashboard (8), and REST API (11), available in three views:
+
+- **Gherkin** — [`TEST-CASES.md`](TEST-CASES.md) (all 26 as Feature/Scenario/Given-When-Then)
+- **Executable** Playwright specs — `tests/{login,dashboard,api}/generated-*.spec.ts`
+- **Design artifacts** (intent + assertions + self-healing notes) — `tests/generated/*.generated.ts`
 
 ```bash
 npm run test:generated:list   # inventory of the 26 generated cases
