@@ -7,6 +7,7 @@
     "test": "playwright test",
     "test:self-healing:v1": "playwright test tests/demo/self-healing-v1-demo.spec.ts",
     "test:self-healing:v2": "playwright test tests/demo/self-healing-v2-centralized.spec.ts",
+    "test:generated:list": "tsx scripts/list-generated-cases.ts",
     "test:login": "playwright test tests/login",
     "test:dashboard": "playwright test tests/dashboard",
     "test:api": "playwright test tests/api",

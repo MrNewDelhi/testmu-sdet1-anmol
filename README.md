@@ -71,13 +71,15 @@ testmu-sdet1-anmol/
 
 ## Task 2 Output
 
-The generated test cases are stored as reviewed Playwright `test.fixme` specs:
+The generated test cases are stored as reviewed Playwright-style artifacts:
 
-- `tests/generated/login.generated.spec.ts`
-- `tests/generated/dashboard.generated.spec.ts`
-- `tests/generated/api.generated.spec.ts`
+- `tests/generated/login.generated.ts`
+- `tests/generated/dashboard.generated.ts`
+- `tests/generated/api.generated.ts`
 
-They are intentionally marked `fixme` at this stage because Task 2 asks for generated test cases. The next implementation pass will convert selected cases into executable automation.
+They are intentionally excluded from the default Playwright test collection because Task 2 asks for generated case design, while `npm test` should show only real executable tests. Use `npm run test:generated:list` to review the generated case inventory.
+
+Generation and Playwright MCP exploration notes are documented in `docs/generated-test-cases.md`.
 
 Sample xAI repair output:
 
@@ -95,7 +97,10 @@ Sample xAI repair output:
 npm install
 npx tsc --noEmit
 npm test -- --list
+npm run test:generated:list
 ```
+
+`npm test` runs executable framework tests only. Generated Task 2 cases are intentionally excluded from the default Playwright collection through `testIgnore` so the report does not show planned cases as skipped tests.
 
 ## Self-Healing v1 Demo
 
@@ -125,6 +130,8 @@ Framework entry points:
 - `src/framework/self-healing/SelfHealingService.ts`
 - `src/fixtures/healingFixtures.ts`
 - `tests/demo/self-healing-v2-centralized.spec.ts`
+
+Self-healing scenario notes are documented in `docs/self-healing-scenarios.md`.
 
 Open the visualizer locally:
 

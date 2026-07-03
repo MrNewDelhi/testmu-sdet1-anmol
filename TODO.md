@@ -31,6 +31,8 @@
   - [x] Schema validation
 - [x] Add generated test cases in the selected framework format.
 - [x] Add a short 3 to 5 line note per module explaining what did not work first time and what changed.
+- [x] Keep generated Task 2 cases out of the default executable Playwright run.
+- [x] Add generated-case summary command.
 
 ## Task 3: LLM Integration in Test Framework
 
@@ -47,6 +49,7 @@
 - [x] Add animated visualizer playback for the self-healing workflow.
 - [x] Centralize self-healing behavior into a shared framework service.
 - [x] Add a Playwright `healing` fixture so tests do not instantiate the healer directly.
+- [x] Document scenarios where self-healing helps and where it should refuse.
 - [ ] Add a code comment explaining why the final Task 3 option was selected over the other assignment option.
 - [x] Attach or output the LLM response inside v1 test results.
 - [x] Add a sample output showing the LLM response.
