@@ -1,8 +1,10 @@
 # TestMu SDET-1 — AI-Native Quality Engineering
 
+[![▶ Live Demo](https://img.shields.io/badge/%E2%96%B6_Live_Demo-GitHub_Pages-2563eb?style=for-the-badge)](https://mrnewdelhi.github.io/testmu-sdet1-anmol/)
+
 An AI-native test framework built for the TestMu SDET-1 challenge. Beyond the required tasks, it grows a **self-healing locator engine** and a **failure-intelligence pipeline** across 11 iterations — each one a real, tested step, wired to a live LLM (xAI Grok), with a **deterministic-first, privacy-first** design.
 
-**▶ Live demo (GitHub Pages): https://mrnewdelhi.github.io/testmu-sdet1-anmol/**
+**▶ Live interactive demo:** [mrnewdelhi.github.io/testmu-sdet1-anmol](https://mrnewdelhi.github.io/testmu-sdet1-anmol/)
 
 - **Stack:** TypeScript · Playwright · SQLite (`node:sqlite`) · xAI Grok
 - **Live demos:** the hosted visualizer above · `npm run test:self-healing` (all versions) · `npm run serve:demo` (local)
