@@ -1,0 +1,23 @@
+{
+  "refusedDecoy": {
+    "note": "xAI confidently returned the header nav link (#nav-login). It is a unique, stable <a> that passes existence and confidence checks, but violates the target contract, so the heal is refused before any click.",
+    "brokenSelector": "#submit-login-button-does-not-exist",
+    "intent": "The primary submit button for the login form",
+    "contract": { "role": "button", "type": "submit", "withinForm": "#login-form", "textLike": "sign ?in|login" },
+    "suggestedSelector": "#nav-login",
+    "error": "Refusing to heal \"#submit-login-button-does-not-exist\": xAI suggested \"#nav-login\", but no single element matched the target contract."
+  },
+  "acceptedTarget": {
+    "selector": "#actual-login-submit",
+    "confidence": 0.95,
+    "reason": "Stable id on the only submit button inside the login form; matches the contract",
+    "brokenSelector": "#submit-login-button-does-not-exist",
+    "intent": "The primary submit button for the login form",
+    "source": "xai",
+    "version": "v4-contract",
+    "computedConfidence": 0.95,
+    "matchCount": 1,
+    "contractValidated": true,
+    "timestamp": "2026-07-03T18:24:41.500Z"
+  }
+}

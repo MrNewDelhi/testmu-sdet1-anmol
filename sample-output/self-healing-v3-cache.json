@@ -9,6 +9,7 @@
     "version": "v2-centralized",
     "computedConfidence": 0.95,
     "matchCount": 1,
+    "contractValidated": false,
     "timestamp": "2026-07-03T18:20:11.001Z"
   },
   {
@@ -21,6 +22,7 @@
     "version": "v2-centralized",
     "computedConfidence": 0.95,
     "matchCount": 1,
+    "contractValidated": false,
     "timestamp": "2026-07-03T18:20:11.244Z"
   }
 ]

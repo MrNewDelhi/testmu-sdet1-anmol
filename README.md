@@ -68,6 +68,7 @@ testmu-sdet1-anmol/
 ## Next Steps
 
 - Task 3 v3 (done): programmatic confidence scoring with a refusal gate, and a SQLite locator cache so xAI is called once per break (`src/framework/self-healing/confidence.ts`, `LocatorCache.ts`).
+- Task 3 v4 (done): target-contract disambiguation — the healed element must satisfy a role/type/ancestor/text contract, so a confident-but-wrong heal (e.g. a header nav link vs the form submit) is refused (`src/framework/self-healing/contract.ts`, demo `tests/demo/self-healing-v4-contract.spec.ts`).
 - Task 3 remaining: destructive-action refusal allow-list, and heal-trend reporting in the HTML report.
 - Task 3 final: publish sample output and reporting artifacts.
 

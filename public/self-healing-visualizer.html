@@ -440,6 +440,27 @@
       .roadmap ul { margin: 0; padding-left: 18px; color: var(--muted); }
       .roadmap li { margin-bottom: 6px; }
 
+      .candidates { display: grid; gap: 10px; margin-top: 14px; }
+      .candidate {
+        display: flex; gap: 12px; align-items: flex-start;
+        border: 1px solid var(--line); border-radius: 10px; padding: 12px; background: var(--panel);
+        transition: border-color 200ms ease, background 200ms ease;
+      }
+      .cand-mark {
+        flex: 0 0 28px; width: 28px; height: 28px; border-radius: 50%;
+        display: grid; place-items: center; font-weight: 800; font-size: 14px;
+        border: 1px solid var(--line); color: var(--muted);
+      }
+      .cand-body code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px;
+        overflow-wrap: anywhere;
+      }
+      .cand-note { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+      .candidate.pass { border-color: var(--green); background: var(--green-soft); }
+      .candidate.pass .cand-mark { border-color: var(--green); background: var(--green); color: #fff; }
+      .candidate.fail { border-color: var(--red); background: color-mix(in srgb, var(--red) 8%, transparent); }
+      .candidate.fail .cand-mark { border-color: var(--red); color: var(--red); }
+
       footer { color: var(--muted); font-size: 12px; padding: 8px 0 40px; }
       footer code {
         font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -485,7 +506,8 @@
         When a Playwright locator matches zero elements, the framework snapshots the interactive DOM,
         asks xAI (Grok) for a repaired selector under a strict JSON schema, re-validates that selector
         against the live page, and only then continues — attaching the whole trace to the test report.
-        This page animates that flow for the naive v1 helper and the centralized v2 service.
+        This page animates that flow for the naive v1 helper and the centralized v2 service, and shows
+        how v4 refuses a confident-but-wrong heal that violates the target contract.
       </p>
     </header>
 
@@ -493,6 +515,7 @@
       <div class="tabs" role="tablist" aria-label="Framework versions">
         <button class="tab" role="tab" aria-selected="true" aria-controls="panel-v1" id="tab-v1">v1 · Naive helper</button>
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v2" id="tab-v2">v2 · Centralized service</button>
+        <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v4" id="tab-v4">v4 · Disambiguation</button>
         <button class="tab" role="tab" aria-selected="false" aria-controls="panel-v3" id="tab-v3">Roadmap</button>
       </div>
 
@@ -625,6 +648,72 @@ await btn.click();</pre>
           </div>
 
           <div class="timeline" data-timeline></div>
+        </div>
+      </section>
+
+      <!-- ================= V4 ================= -->
+      <section id="panel-v4" role="tabpanel" aria-labelledby="tab-v4" hidden>
+        <div class="summary">
+          <article class="card">
+            <span class="kicker amber">Problem</span>
+            <strong>Two "login" controls</strong>
+            <p>A header nav link and the form submit button both read like "login".</p>
+          </article>
+          <article class="card">
+            <span class="kicker blue">Contract</span>
+            <strong>Describe the target</strong>
+            <p><code>role=button, type=submit, inside #login-form</code>.</p>
+          </article>
+          <article class="card">
+            <span class="kicker green">Guardrail</span>
+            <strong>Validate the answer</strong>
+            <p>The healed element must satisfy the contract, or the heal is refused.</p>
+          </article>
+          <article class="card">
+            <span class="kicker green">Outcome</span>
+            <strong>No wrong clicks</strong>
+            <p>The confident-but-wrong header link is rejected before any click.</p>
+          </article>
+        </div>
+
+        <div class="shell">
+          <div class="topbar">
+            <div>
+              <strong>Contract disambiguation — locator(selector, intent, contract)</strong>
+              <p class="status" id="v4-status">The broken submit selector needs healing. Both candidates look like "login".</p>
+            </div>
+            <div class="controls">
+              <button class="btn primary" type="button" id="v4-eval">Evaluate contract</button>
+              <button class="btn" type="button" id="v4-reset">Reset</button>
+            </div>
+          </div>
+
+          <div class="stage" style="grid-template-columns: 1fr;">
+            <div>
+              <pre class="code">const btn = await healing.locator(
+  '#submit-login-button-does-not-exist',
+  'The primary submit button for the login form',
+  { role: 'button', type: 'submit', withinForm: '#login-form', textLike: 'sign ?in|login' },
+);</pre>
+
+              <div class="candidates">
+                <div class="candidate" data-candidate="link">
+                  <div class="cand-mark" data-mark>?</div>
+                  <div class="cand-body">
+                    <code>&lt;a id="nav-login" href="?route=account/login"&gt;Login&lt;/a&gt;</code>
+                    <p class="cand-note" data-note>Header nav link — a candidate xAI might confidently return (unique, stable id → high confidence).</p>
+                  </div>
+                </div>
+                <div class="candidate" data-candidate="submit">
+                  <div class="cand-mark" data-mark>?</div>
+                  <div class="cand-body">
+                    <code>&lt;button id="actual-login-submit" type="submit"&gt;Sign in&lt;/button&gt;</code>
+                    <p class="cand-note" data-note>Form submit button — the real target.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -815,6 +904,42 @@ await btn.click();</pre>
         flow.querySelector('[data-action="step"]').addEventListener('click', () => step(flow));
         flow.querySelector('[data-action="reset"]').addEventListener('click', () => reset(flow));
       });
+
+      // ---- v4 contract disambiguation ----------------------------------
+      (function () {
+        const evalBtn = document.getElementById('v4-eval');
+        const resetBtn = document.getElementById('v4-reset');
+        const status = document.getElementById('v4-status');
+        if (!evalBtn) return;
+        const cands = [...document.querySelectorAll('#panel-v4 .candidate')];
+        const RESULT = {
+          link: { pass: false, mark: '✗', note: 'Refused: role=link and outside #login-form — violates the contract.' },
+          submit: { pass: true, mark: '✓', note: 'Accepted: role=button, type=submit, inside #login-form — satisfies the contract.' },
+        };
+        const DEFAULT_NOTE = {
+          link: 'Header nav link — a candidate xAI might confidently return (unique, stable id → high confidence).',
+          submit: 'Form submit button — the real target.',
+        };
+        evalBtn.addEventListener('click', () => {
+          cands.forEach((c) => {
+            const r = RESULT[c.getAttribute('data-candidate')];
+            c.classList.toggle('pass', r.pass);
+            c.classList.toggle('fail', !r.pass);
+            c.querySelector('[data-mark]').textContent = r.mark;
+            c.querySelector('[data-note]').textContent = r.note;
+          });
+          status.textContent = 'Exactly one element satisfies the contract → heal accepted. The header link is refused (never clicked).';
+        });
+        resetBtn.addEventListener('click', () => {
+          cands.forEach((c) => {
+            const key = c.getAttribute('data-candidate');
+            c.classList.remove('pass', 'fail');
+            c.querySelector('[data-mark]').textContent = '?';
+            c.querySelector('[data-note]').textContent = DEFAULT_NOTE[key];
+          });
+          status.textContent = 'The broken submit selector needs healing. Both candidates look like "login".';
+        });
+      })();
     </script>
   </body>
 </html>

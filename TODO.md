@@ -55,6 +55,9 @@
 - [x] Add programmatic confidence scoring (uniqueness + selector stability) with a refusal threshold.
 - [x] Add a SQLite locator cache keyed on (page, broken selector, intent) so xAI is called once per break.
 - [x] Prove the cache end-to-end: heal via xAI once, then serve from cache with no second call.
+- [x] Add target-contract disambiguation so a confident-but-wrong heal (header link vs form submit) is refused.
+- [x] Add a v4 demo: decoy header link refused, real submit accepted, and a live xAI run steered by the contract.
+- [ ] Add a destructive-action refusal allow-list (delete/pay/submit-order) on top of the contract.
 - [ ] Add a code comment explaining why the final Task 3 option was selected over the other assignment option.
 - [x] Attach or output the LLM response inside v1 test results.
 - [x] Add a sample output showing the LLM response.
