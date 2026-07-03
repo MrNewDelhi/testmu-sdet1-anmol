@@ -88,18 +88,37 @@ await expect(page.locator('#column-right').getByRole('link', { name: 'Logout' })
     selfHealingValue: 'Useful when responsive DOM ordering changes and selectors need semantic recovery.',
   },
   {
-    id: 'dashboard-navigation-order',
-    type: 'edge',
-    title: 'Account navigation order stays predictable after refresh',
-    intent: 'Verify account navigation order does not unexpectedly shuffle.',
+    id: 'dashboard-data-accuracy',
+    type: 'positive',
+    title: 'Listing results banner matches rendered product count',
+    intent: 'Verify the "Showing X to Y of Z" summary is consistent with the products actually rendered.',
     playwrightDraft: `
-const nav = page.locator('#column-right');
-const before = await nav.getByRole('link').allTextContents();
-await page.reload();
-const after = await nav.getByRole('link').allTextContents();
-expect(after).toEqual(before);
+await page.goto('/index.php?route=product/category&path=20');
+const banner = await page.getByText(/Showing \\d+ to \\d+ of \\d+/).first().innerText();
+const [, from, to, total] = banner.match(/Showing (\\d+) to (\\d+) of (\\d+)/);
+const rendered = await page.locator('.product-layout').count();
+expect(rendered).toBe(Number(to) - Number(from) + 1);
+expect(Number(total)).toBeGreaterThanOrEqual(rendered);
 `.trim(),
-    assertions: ['Navigation labels remain in the same order after reload'],
-    selfHealingValue: 'Useful if list wrappers change and order-sensitive selectors become brittle.',
+    assertions: ['Rendered product count equals the shown range', 'Total is at least the rendered count'],
+    selfHealingValue: 'Data-integrity check: a failure explainer can flag pagination/summary drift, not a locator repair.',
+    mcpEvidence: ['Playwright MCP confirmed category path=20 (Desktops) renders 15 .product-layout cards with banner "Showing 1 to 15 of 75".'],
+  },
+  {
+    id: 'dashboard-filter-sort',
+    type: 'positive',
+    title: 'Sort by price orders products ascending',
+    intent: 'Verify the Sort-By control re-orders the listing so prices are non-decreasing.',
+    playwrightDraft: `
+await page.goto('/index.php?route=product/category&path=20');
+await page.locator('.content-sort-by select.custom-select').first()
+  .selectOption({ label: 'Price (Low > High)' });
+const prices = (await page.locator('.product-layout .price-new').allInnerTexts())
+  .map((t) => Number(t.replace(/[^0-9.]/g, '')));
+expect(prices).toEqual([...prices].sort((a, b) => a - b));
+`.trim(),
+    assertions: ['Sort control navigates to the sorted listing', 'Displayed prices are ascending'],
+    selfHealingValue: 'The sort <select> id is dynamic; a stable container/label locator is the resilient contract to heal toward.',
+    mcpEvidence: ['Playwright MCP confirmed the sort select uses location=this.value with option "Price (Low > High)" -> &sort=p.price&order=ASC, and prices sort ascending.'],
   },
 ];

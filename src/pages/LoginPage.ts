@@ -23,11 +23,24 @@ export class LoginPage {
   async login(email: string, password: string): Promise<void> {
     await this.emailInput.fill(email);
     await this.passwordInput.fill(password);
+    await this.submit();
+  }
+
+  async submit(): Promise<void> {
     await this.submitButton.click();
   }
 
   async expectLoginError(): Promise<void> {
     await expect(this.errorAlert).toBeVisible();
     await expect(this.errorAlert).toContainText(/No match for E-Mail Address|exceeded allowed number of login attempts/i);
+  }
+
+  async expectOnLoginPage(): Promise<void> {
+    await expect(this.page).toHaveURL(/route=account\/login/);
+    await expect(this.submitButton).toBeVisible();
+  }
+
+  async expectLockedOut(): Promise<void> {
+    await expect(this.errorAlert).toContainText(/exceeded allowed number of login attempts/i);
   }
 }

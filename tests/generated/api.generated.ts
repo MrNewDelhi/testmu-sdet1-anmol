@@ -106,7 +106,9 @@ expect([400, 422, 500]).toContain(response.status());
     title: 'Unauthorized update is rejected',
     intent: 'Verify protected mutation endpoints require auth.',
     playwrightDraft: `
-const response = await request.put('/booking/1', {
+const create = await request.post('/booking', { data: validBookingPayload });
+const { bookingid } = await create.json();
+const response = await request.put(\`/booking/\${bookingid}\`, {
   data: validBookingPayload,
 });
 expect(response.status()).toBe(403);
@@ -115,19 +117,90 @@ expect(response.status()).toBe(403);
     selfHealingValue: 'Useful for future classification between auth setup issue and real API regression.',
   },
   {
+    id: 'api-read-booking-by-id',
+    type: 'positive',
+    title: 'Read a created booking by id',
+    intent: 'Verify the R in CRUD: a created booking is retrievable by id.',
+    playwrightDraft: `
+const create = await request.post('/booking', { data: validBookingPayload });
+const { bookingid } = await create.json();
+const response = await request.get(\`/booking/\${bookingid}\`);
+expect(response.status()).toBe(200);
+const body = await response.json();
+expect(body).toEqual(expect.objectContaining({
+  firstname: validBookingPayload.firstname,
+  lastname: validBookingPayload.lastname,
+}));
+`.trim(),
+    assertions: ['GET by id returns 200', 'Body matches the created booking'],
+    selfHealingValue: 'Not selector healing; a failure explainer can interpret contract drift on the read path.',
+  },
+  {
+    id: 'api-update-booking-authorized',
+    type: 'positive',
+    title: 'Authorized update mutates the booking',
+    intent: 'Verify the U in CRUD: an authenticated PUT updates fields.',
+    playwrightDraft: `
+const token = await createAuthToken(request);
+const create = await request.post('/booking', { data: validBookingPayload });
+const { bookingid } = await create.json();
+const response = await request.put(\`/booking/\${bookingid}\`, {
+  headers: { Cookie: \`token=\${token}\`, Accept: 'application/json', 'Content-Type': 'application/json' },
+  data: { ...validBookingPayload, firstname: 'Updated', totalprice: 500 },
+});
+expect(response.status()).toBe(200);
+expect(await response.json()).toEqual(expect.objectContaining({ firstname: 'Updated', totalprice: 500 }));
+`.trim(),
+    assertions: ['Authorized PUT returns 200', 'Updated fields are reflected in the response'],
+    selfHealingValue: 'Useful for classification between an auth setup issue and a real mutation regression.',
+  },
+  {
+    id: 'api-delete-booking-authorized',
+    type: 'positive',
+    title: 'Authorized delete removes the booking',
+    intent: 'Verify the D in CRUD: an authenticated delete removes the resource.',
+    playwrightDraft: `
+const token = await createAuthToken(request);
+const create = await request.post('/booking', { data: validBookingPayload });
+const { bookingid } = await create.json();
+const del = await request.delete(\`/booking/\${bookingid}\`, {
+  headers: { Cookie: \`token=\${token}\`, Accept: 'application/json' },
+});
+expect(del.status()).toBe(201);
+const after = await request.get(\`/booking/\${bookingid}\`);
+expect(after.status()).toBe(404);
+`.trim(),
+    assertions: ['Authorized DELETE returns 201', 'The booking is gone afterwards (404)'],
+    selfHealingValue: 'Not selector healing; supports lifecycle validation for future failure explanation.',
+  },
+  {
+    id: 'api-not-found',
+    type: 'negative',
+    title: 'Non-existent booking id returns 404',
+    intent: 'Verify 4xx error handling for a missing resource.',
+    playwrightDraft: `
+const response = await request.get('/booking/99999999');
+expect(response.status()).toBe(404);
+`.trim(),
+    assertions: ['GET on a missing id returns 404'],
+    selfHealingValue: 'Failure explainer can distinguish an expected 404 from an unexpected server error.',
+  },
+  {
     id: 'api-rate-limiting-burst',
     type: 'edge',
-    title: 'Repeated safe requests remain stable or throttle predictably',
-    intent: 'Verify burst traffic does not corrupt response shape.',
+    title: 'Burst traffic is not rate-limited on this SUT',
+    intent: 'Probe rate-limiting: restful-booker has no limiter, so a burst must all succeed.',
     playwrightDraft: `
 const responses = await Promise.all(
-  Array.from({ length: 10 }, () => request.get('/booking')),
+  Array.from({ length: 15 }, () => request.get('/booking')),
 );
+// Against a throttled API some of these would be 429 and this assertion
+// would fail, which is exactly the signal a rate-limit test should catch.
 for (const response of responses) {
-  expect([200, 429]).toContain(response.status());
+  expect(response.status()).toBe(200);
 }
 `.trim(),
-    assertions: ['Each response is either successful or predictably throttled'],
-    selfHealingValue: 'Helpful for flaky/environment classification when rate limits create intermittent failures.',
+    assertions: ['All burst requests return 200 (no rate limiting on this SUT)'],
+    selfHealingValue: 'Helpful for flaky/environment classification when real rate limits create intermittent 429s.',
   },
 ];

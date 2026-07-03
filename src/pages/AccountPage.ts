@@ -34,4 +34,8 @@ export class AccountPage {
   async logout(): Promise<void> {
     await this.logoutLink.click();
   }
+
+  async openEditAccount(): Promise<void> {
+    await this.editAccountLink.click();
+  }
 }

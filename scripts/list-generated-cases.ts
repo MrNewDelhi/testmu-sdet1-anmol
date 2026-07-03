@@ -23,4 +23,4 @@ console.log('\nExecutable module specs:');
 console.log('- tests/login/generated-login.spec.ts');
 console.log('- tests/dashboard/generated-dashboard.spec.ts');
 console.log('- tests/api/generated-api.spec.ts');
-console.log('\nRun all 21 executable generated cases with: npm run test:generated:run');
+console.log('\nRun all executable generated cases with: npm run test:generated:run');

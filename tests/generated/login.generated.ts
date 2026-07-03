@@ -72,9 +72,9 @@ await page.goto('/index.php?route=account/login');
 await page.locator('#input-email').fill('not-an-email');
 await page.locator('#input-password').fill(testUser.password);
 await page.locator('form[action*="account/login"] input[type="submit"][value="Login"]').click();
-await expect(page.locator('#input-email')).toBeFocused();
+await expect(page).toHaveURL(/route=account\\/login/);
 `.trim(),
-    assertions: ['Invalid email does not authenticate', 'Email field remains the correction target'],
+    assertions: ['Invalid email does not authenticate', 'User remains on the login page'],
     selfHealingValue: 'Useful if input selectors drift but label association remains intact.',
   },
   {
@@ -84,7 +84,7 @@ await expect(page.locator('#input-email')).toBeFocused();
     intent: 'Verify account recovery is reachable from the login page.',
     playwrightDraft: `
 await page.goto('/index.php?route=account/login');
-await page.getByRole('link', { name: 'Forgotten Password' }).click();
+await page.locator('form[action*="account/login"] a[href*="account/forgotten"]').click();
 await expect(page).toHaveURL(/route=account\\/forgotten/);
 await expect(page.getByRole('heading', { name: 'Forgot Your Password?' })).toBeVisible();
 `.trim(),
@@ -110,18 +110,21 @@ await expect(page.locator('form[action*="account/login"] input[type="submit"][va
   {
     id: 'login-brute-force-lockout',
     type: 'negative',
-    title: 'Repeated failed attempts trigger lockout or throttling signal',
-    intent: 'Verify repeated failed login attempts do not continue silently forever.',
+    title: 'Repeated failed attempts trigger account lockout',
+    intent: 'Verify OpenCart locks the account after the allowed number of failed attempts.',
     playwrightDraft: `
+const lockedEmail = \\\`locked_\\\${Date.now()}@example.com\\\`;
 await page.goto('/index.php?route=account/login');
-for (let attempt = 0; attempt < 5; attempt += 1) {
-  await page.locator('#input-email').fill('locked-user@example.com');
+for (let attempt = 0; attempt < 6; attempt += 1) {
+  await page.locator('#input-email').fill(lockedEmail);
   await page.locator('#input-password').fill('wrong-password');
   await page.locator('form[action*="account/login"] input[type="submit"][value="Login"]').click();
 }
-await expect(page.getByText(/warning|locked|attempt|try again/i)).toBeVisible();
+await expect(page.locator('.alert-danger'))
+  .toContainText('exceeded allowed number of login attempts');
 `.trim(),
-    assertions: ['A warning/lockout signal is shown', 'User is not authenticated'],
+    assertions: ['Lockout warning is shown after 5 failed attempts', 'User is not authenticated'],
     selfHealingValue: 'Useful if warning container or copy shifts and the healer must still locate the relevant feedback region.',
+    mcpEvidence: ['Playwright MCP confirmed the 6th failed attempt returns "Warning: Your account has exceeded allowed number of login attempts. Please try again in 1 hour."'],
   },
 ];

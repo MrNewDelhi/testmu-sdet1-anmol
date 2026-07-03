@@ -1,7 +1,6 @@
 import { expect, test } from '../../src/fixtures/testFixtures.js';
-import { env } from '../../src/config/env.js';
 
-test.describe('Generated Dashboard cases - executable', () => {
+test.describe('Generated Dashboard cases - account (executable)', () => {
   test.beforeEach(async ({ loginPage, accountPage, registeredUser }) => {
     await loginPage.goto();
     await loginPage.login(registeredUser.email, registeredUser.password);
@@ -21,24 +20,22 @@ test.describe('Generated Dashboard cases - executable', () => {
     await expect(accountPage.logoutLink).toBeEnabled();
   });
 
-  test('dashboard-edit-account-navigation', async ({ page, accountPage }) => {
-    await accountPage.editAccountLink.click();
-    await expect(page).toHaveURL(/route=account\/edit/);
-    await expect(page.locator('#input-firstname')).toBeVisible();
+  test('dashboard-edit-account-navigation', async ({ accountPage, editAccountPage }) => {
+    await accountPage.openEditAccount();
+    await editAccountPage.expectLoaded();
   });
 
-  test('dashboard-guest-redirect', async ({ page, loginPage }) => {
+  test('dashboard-guest-redirect', async ({ page, accountPage, loginPage }) => {
     await page.context().clearCookies();
-    await page.goto(`${env.webBaseUrl}/index.php?route=account/account`);
-    await expect(page).toHaveURL(/route=account\/login/);
-    await expect(loginPage.submitButton).toBeVisible();
+    await accountPage.goto();
+    await loginPage.expectOnLoginPage();
   });
 
-  test('dashboard-logout-clears-session', async ({ page, accountPage }) => {
+  test('dashboard-logout-clears-session', async ({ page, accountPage, loginPage }) => {
     await accountPage.logout();
     await expect(page).toHaveURL(/route=account\/logout/);
     await accountPage.goto();
-    await expect(page).toHaveURL(/route=account\/login/);
+    await loginPage.expectOnLoginPage();
   });
 
   test('dashboard-responsive-layout', async ({ page, accountPage }) => {
@@ -48,11 +45,25 @@ test.describe('Generated Dashboard cases - executable', () => {
     await expect(accountPage.changePasswordTile).toBeVisible();
     await expect(accountPage.logoutLink).toBeVisible();
   });
+});
 
-  test('dashboard-navigation-order', async ({ page, accountPage }) => {
-    const before = await accountPage.sidebar.getByRole('link').allTextContents();
-    await page.reload();
-    const after = await accountPage.sidebar.getByRole('link').allTextContents();
-    expect(after).toEqual(before);
+test.describe('Generated Dashboard cases - catalog data and sorting (executable)', () => {
+  test('dashboard-data-accuracy', async ({ catalogPage }) => {
+    await catalogPage.goto();
+    const { from, to, total } = await catalogPage.resultsSummary();
+    // The "Showing {from} to {to} of {total}" banner must match reality:
+    // the rendered product count equals the size of the shown range.
+    const rendered = await catalogPage.visibleProductCount();
+    expect(rendered).toBe(to - from + 1);
+    expect(total).toBeGreaterThanOrEqual(rendered);
+  });
+
+  test('dashboard-filter-sort', async ({ catalogPage }) => {
+    await catalogPage.goto();
+    await catalogPage.sortBy('Price (Low > High)');
+    const prices = await catalogPage.visiblePrices();
+    expect(prices.length).toBeGreaterThan(1);
+    const ascending = [...prices].sort((a, b) => a - b);
+    expect(prices).toEqual(ascending);
   });
 });

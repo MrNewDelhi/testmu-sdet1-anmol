@@ -33,7 +33,7 @@
 - [x] Add a short 3 to 5 line note per module explaining what did not work first time and what changed.
 - [x] Keep generated Task 2 design artifacts out of the default executable Playwright run.
 - [x] Add generated-case summary command.
-- [x] Automate all 21 generated cases in proper Login, Dashboard, and API module specs.
+- [x] Automate all 26 generated cases in proper Login, Dashboard, and API module specs.
 - [x] Use POM model for web Login and Dashboard tests.
 
 ## Task 3: LLM Integration in Test Framework

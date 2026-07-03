@@ -37,7 +37,7 @@ ChatGpt 5.5 Light using Codex
 - Added sample v1 xAI selector-repair output in `sample-output/self-healing-v1.json`.
 - Added centralized Task 3 v2 framework layer with `SelfHealingService` and a shared Playwright `healing` fixture.
 - Upgraded the visualizer from static tabs to animated workflow playback for naive v1 and centralized v2.
-- Automated all 21 generated Task 2 cases using POM-based module specs.
+- Automated all 26 generated Task 2 cases using POM-based module specs, including catalog data-accuracy and filter/sort coverage.
 
 ## Planned Structure
 
@@ -88,11 +88,13 @@ Executable generated test specs:
 - `tests/dashboard/generated-dashboard.spec.ts`
 - `tests/api/generated-api.spec.ts`
 
-Run all 21 generated executable cases:
+Run all 26 generated executable cases (Login 7, Dashboard 8, REST API 11):
 
 ```bash
 npm run test:generated:run
 ```
+
+The Dashboard module spans two surfaces: the post-login **My Account** page (widget loading, permission-based visibility, responsive layout, logout) and the **product listing** page (data accuracy via the results banner, and filter/sort via the price sort control), because the account page has no data grid or sort control of its own.
 
 Sample xAI repair output:
 
@@ -114,7 +116,7 @@ npm run test:generated:list
 npm run test:generated:run
 ```
 
-`npm test` runs the executable generated module specs plus the self-healing framework demos. The non-executable generated design artifacts stay excluded through `testIgnore` so planned-case artifacts do not appear as skipped tests.
+`npm test` runs the 26 executable generated module specs plus the self-healing framework demos. The non-executable generated design artifacts stay excluded through `testIgnore` so planned-case artifacts do not appear as skipped tests.
 
 ## Self-Healing v1 Demo
 
