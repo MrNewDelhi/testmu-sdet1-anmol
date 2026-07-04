@@ -1,6 +1,7 @@
 import type { TestInfo } from '@playwright/test';
 import { env } from '../../config/env.js';
 import { FailureExplainer } from './FailureExplainer.js';
+import { classifyApiFailure } from './apiClassifier.js';
 
 /**
  * Shared failure-analysis handling for the web and API fixtures.
@@ -18,6 +19,8 @@ export interface FailureContextData {
   screenshotBase64?: string;
   apiRequest?: string;
   apiResponse?: string;
+  /** HTTP status of the failing API call, if any — enables deterministic classification. */
+  apiStatus?: number;
 }
 
 // Mode-A budget/dedup, shared across tests in a worker process.
@@ -40,6 +43,22 @@ export async function analyzeFailure(testInfo: TestInfo, context: FailureContext
       contentType: 'application/json',
     });
     return;
+  }
+
+  // Deterministic-first: if the API status alone decides the bucket, skip the LLM.
+  if (context.apiStatus) {
+    const verdict = classifyApiFailure(context.apiStatus);
+    if (verdict) {
+      await testInfo.attach('failure-analysis', {
+        body: JSON.stringify(
+          { test: context.title, url: context.url, source: 'deterministic', analysis: verdict },
+          null,
+          2,
+        ),
+        contentType: 'application/json',
+      });
+      return;
+    }
   }
 
   // Mode A: analyze at failure time.

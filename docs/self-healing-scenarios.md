@@ -141,6 +141,13 @@ live: a test asserting `POST /booking` returns 500 (it returns 200) is correctly
 called `test-bug` because xAI can see the request succeeded — high-signal context
 that needs no git enrichment. See `src/fixtures/apiFailureAnalysisFixtures.ts`.
 
+**Deterministic API buckets (no LLM).** Most API failures mean something unambiguous
+from the status alone, so `classifyApiFailure` buckets them locally and skips the model:
+`5xx` -> product-bug, `429`/`401`/`403` -> environment, `400`/`422` -> test-bug (bad
+request / contract drift). Only statuses that don't decide it (e.g. "expected 500, got
+200", or a `404` that might be ordering) escalate to xAI. Applied in both mode A and the
+mode-B reporter. See `src/framework/failure-analysis/apiClassifier.ts`.
+
 ### v11: PII redaction before the remote LLM
 
 All failure context is redacted before it is sent to the remote model. The

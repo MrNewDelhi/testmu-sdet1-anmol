@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { FullResult, Reporter, TestCase, TestResult } from '@playwright/test/reporter';
 import { FailureExplainer } from '../framework/failure-analysis/FailureExplainer.js';
+import { classifyApiFailure } from '../framework/failure-analysis/apiClassifier.js';
 
 interface FailureContext {
   title: string;
@@ -13,6 +14,7 @@ interface FailureContext {
   screenshotBase64?: string;
   apiRequest?: string;
   apiResponse?: string;
+  apiStatus?: number;
 }
 
 // Stored outside test-results (which Playwright wipes at the start of each run)
@@ -75,6 +77,14 @@ export default class BatchedFailureAnalysisReporter implements Reporter {
       const lead = members[0].ctx;
       const leadTitle = members[0].title;
       const tests = members.map((m) => m.title);
+
+      // Deterministic-first: if the API status decides the bucket, skip the LLM.
+      const deterministic = lead.apiStatus ? classifyApiFailure(lead.apiStatus) : null;
+      if (deterministic) {
+        records.push({ signature, tests, cascadeCount: members.length, source: 'deterministic', analysis: deterministic });
+        continue;
+      }
+
       if (analyzed >= MAX_GROUPS || !process.env.XAI_API_KEY) {
         records.push({ signature, tests, cascadeCount: members.length, analysis: null, skipped: true });
         continue;

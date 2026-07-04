@@ -489,6 +489,14 @@ error: expect(status).toBe(500)  received 200</pre></div>
 summary: POST /booking succeeds with 200 + booking
          JSON, but the test asserts 500.
 fix: assert 200 (the create worked), not 500.</pre></div>
+              </div>
+              <div class="body" style="border-top:1px solid var(--line);padding-top:16px">
+                <p style="margin:0 0 10px;font-size:13px;color:var(--muted)"><strong style="color:var(--ink)">Deterministic-first:</strong> most API failures never reach the model — the status alone buckets them (only the ambiguous ones escalate).</p>
+                <pre class="code">5xx           -> product-bug   (server errored)
+429           -> environment   (rate limited)
+401 / 403     -> environment   (auth / setup)
+400 / 422     -> test-bug      (bad request / contract drift)
+200, 404, …   -> escalate to xAI (status doesn't decide it)</pre>
               </div></div>
           </div>
 

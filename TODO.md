@@ -70,6 +70,10 @@
 - [x] v9 (mode B): move the LLM call to a post-run reporter — batch/dedup final failures by signature and enrich each with prior-run status (persisted), git-changed-files, and cascade size; verified the git signal flips a newly-changed test from product-bug to test-bug.
 - [x] v10: for API-level failures, capture and send the raw request and response to the failure analysis (RecordingApi + apiFailureAnalysis fixture). Verified live: xAI reads the exchange and correctly classifies an "expected 500, got 200" test as test-bug.
 - [x] v11: PII redaction before sending context to the remote LLM — pattern-based over the full text (not slicing), deterministic regex for well-shaped PII plus field-aware rules for secrets (password/token/cvv values by field name), password values also dropped at DOM capture, and an optional small local model as an LLM-judge for fuzzy PII (names/addresses).
+- [x] Deterministic API failure buckets: classify by status (5xx product-bug, 429/401/403 environment, 400/422 test-bug) and skip the LLM; only ambiguous statuses escalate. Applied in mode A + mode B; unit-tested with a 500 demo.
+- [ ] Flaky test classifier (Task 3 Option B): deterministic detection (retry/history) + LLM root-cause bucketing of the ambiguous middle.
+- [ ] Context integrations: Swagger/OpenAPI for API contract accuracy; log + code/diff context; org decision context (PRs, GDrive, Slack/Teams) to decide stale-test vs real-bug.
+- [ ] Bug-reproduction pipeline: multimodal AI reproduces a confirmed bug and files a structured ticket (Jira/Linear/GitHub Issues).
 - [ ] Add a destructive-action refusal allow-list (delete/pay/submit-order) on top of the contract.
 - [ ] Add a code comment explaining why the final Task 3 option was selected over the other assignment option.
 - [x] Attach or output the LLM response inside v1 test results.

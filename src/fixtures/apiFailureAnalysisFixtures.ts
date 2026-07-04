@@ -31,6 +31,7 @@ export const test = base.extend<{ api: RecordingApi; apiFailureAnalysis: void }>
         apiResponse: exchange
           ? `HTTP ${exchange.status}${exchange.ok ? ' OK' : ''}\n\n${exchange.responseBody.slice(0, 3000)}`
           : undefined,
+        apiStatus: exchange?.status,
       });
     },
     { auto: true },

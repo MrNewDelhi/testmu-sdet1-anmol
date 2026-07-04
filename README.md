@@ -75,7 +75,7 @@ Each version has an interactive visualizer tab and a runnable demo.
 | v7 | Failure Explainer | on failure → page state + error → xAI → categorized explanation on the report | `npm run test:self-healing:v7` |
 | v8 | Vision | attach a page screenshot (multimodal), so the model sees the render | `npm run test:self-healing:v7` |
 | v9 | Batched + enriched | post-run reporter: dedup + enrich with run history & git diff | `npm run test:self-healing:v9` |
-| v10 | API req/response | for API failures, send the raw HTTP exchange (no DOM) | `npm run test:self-healing:v7` / `:v9` |
+| v10 | API req/response | raw HTTP exchange for API failures + **deterministic status buckets** (skip the LLM when the code decides it) | `npm run test:self-healing:v7` / `:v9` |
 | v11 | PII redaction | scrub context before the remote LLM: patterns + field-aware + local judge | `npx playwright test tests/framework/redact.spec.ts` |
 
 Run everything (all versions + framework unit tests): `npm run test:self-healing`.
@@ -150,10 +150,21 @@ Key source:
 
 ## What I'd build next
 
-- **Refusal allow-list** for destructive actions (never heal a delete/pay/submit-order without an explicit opt-in).
-- **Heal-trend reporting** — chart selector drift and heal/refuse rates across runs.
-- **Screenshot PII gating** (`PII_STRICT`) and image redaction for the vision path.
-- **Flaky classifier (Option B)** on top of the persisted run history already collected in mode B.
+**Near-term (concrete):**
+
+- **Deterministic API buckets → deeper deterministic triage.** API failures are already classified by status without an LLM (`5xx` → product-bug, `429`/`401`/`403` → environment, `400`/`422` → test-bug; ambiguous ones escalate — see `src/framework/failure-analysis/apiClassifier.ts`). Next: fold in timeouts/DNS/connection errors and intermittency (a `5xx` seen once vs every run).
+- **Flaky classifier (Option B).** The other Task 3 option, on top of mode B's persisted run history: *detection* stays deterministic (retry-recovered + history flip-flops — an LLM is the wrong tool to *detect* flaky), and the LLM does the **root-cause bucketing + explanation** of the ambiguous middle (timing vs data vs ordering vs a real intermittent bug hiding as "flaky").
+- **Refusal allow-list** for destructive actions; **heal-trend reporting**; **screenshot PII gating** (`PII_STRICT`) + image redaction for the vision path.
+- **Log & code context.** Feed app/server logs and the failing spec + its diff into the analysis — more context, sharper classification (the same "context gap" lesson from v8/v9).
+
+**The bigger picture — context is everything.**
+
+The recurring limit across v7–v11 was never the model; it was **missing context**. So the roadmap is about *feeding the system the context that already exists in the org*, not making the model smarter.
+
+- **Swagger / OpenAPI makes API analysis dramatically more valuable and accurate.** With the real contract in hand, "is this a client bug or a server bug?" stops being a guess — the spec says what the request/response *should* be, so schema/contract drift becomes deterministic instead of an LLM opinion.
+- **Team decisions mark what's a real bug vs a feature.** The one thing no DOM, screenshot, or log can answer is *"was this changed on purpose?"* That answer lives in **PRs, meeting notes, GDrive specs, and Slack/Teams threads.** Pulling that in (RAG over org knowledge, or a Slack/Teams bot that answers "is this expected?") is what lets the system decide **stale test → update the assertion** vs **real regression → file a bug** — the product-intent gap we kept hitting, finally closed by *organizational* context.
+- **A philosophy, not just a feature:** teams have process gaps, and those are *legacy* gaps. AI here isn't trying to *fix* them from a QA seat — it's here to **put the pen down and adapt to the processes that already exist**, plugging into Swagger, tickets, and team decisions rather than dictating a new one.
+- **Bug-reproduction pipeline.** When a real bug is confirmed, close the loop: a **multimodal AI** reproduces it (drives the steps, captures the screenshot/trace) and files a structured ticket into the **tracking system (Jira/Linear/GitHub Issues)** — turning a red run into an actionable, reproduced report with zero manual triage.
 
 ## Repository layout
 
