@@ -89,4 +89,4 @@
 - [x] Update `README.md` with what would be built next with more time.
 - [x] Keep `ai-usage-log.md` updated with every AI tool used, task helped with, and output produced.
 - [x] Live demo published to GitHub Pages and linked from the README.
-- [ ] Share the GitHub repository link. (repo is public and ready: https://github.com/MrNewDelhi/testmu-sdet1-anmol)
+- [x] Share the GitHub repository link: https://github.com/MrNewDelhi/testmu-sdet1-anmol
