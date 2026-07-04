@@ -40,7 +40,7 @@
 
 - [x] Pick an LLM integration direction:
   - [x] Naive v1 self-healing locator demo using xAI.
-  - [ ] Finalize whether this becomes the submitted Task 3 option or supports the failure-explainer path.
+  - [x] Finalized: **Task 3 = Option A (Failure Explainer, v7–v11)**; self-healing (v1–v6) is the extra-credit foundation it grew from.
 - [x] Create a deliberately wrong locator scenario.
 - [x] Capture DOM context and send it to xAI in a try/catch healing flow.
 - [x] Validate the returned selector against the page before continuing.
@@ -61,7 +61,7 @@
 - [x] Add a v5 demo: local keyword/contract resolution with zero xAI calls, plus an escalation case.
 - [x] Add v6 multi-locator cache (store the target's top-3 attribute-diverse locators) so single-attribute drift heals from a fallback.
 - [x] Add a v6 demo: rename the primary id and heal from the data-testid locator with no xAI call.
-- [x] Give each of the six versions its own visualizer tab and demo script.
+- [x] Give each of the six self-healing versions (v1–v6) its own visualizer tab and demo script.
 - [x] Add v7 Failure Explainer (Task 3 Option A): on failure, send page state + error to xAI and attach a categorized explanation to the report.
 - [x] Trigger the explainer only on the final failed attempt, with a per-run budget, dedup, and a no-key skip.
 - [x] Add a custom FailureAnalysisReporter writing playwright-report/failure-analysis.html + .json, a v7 demo/script, a v7 visualizer tab, and a sample output.
@@ -75,17 +75,18 @@
 - [ ] Context integrations: Swagger/OpenAPI for API contract accuracy; log + code/diff context; org decision context (PRs, GDrive, Slack/Teams) to decide stale-test vs real-bug.
 - [ ] Bug-reproduction pipeline: multimodal AI reproduces a confirmed bug and files a structured ticket (Jira/Linear/GitHub Issues).
 - [ ] Add a destructive-action refusal allow-list (delete/pay/submit-order) on top of the contract.
-- [ ] Add a code comment explaining why the final Task 3 option was selected over the other assignment option.
+- [x] Add a code comment explaining why the final Task 3 option was selected over the other assignment option (`src/framework/failure-analysis/FailureExplainer.ts`).
 - [x] Attach or output the LLM response inside v1 test results.
 - [x] Add a sample output showing the LLM response.
 
 ## Final Submission
 
-- [ ] Ensure the repository is public.
-- [ ] Ensure `prompts.md` contains raw prompts exactly as written.
-- [ ] Ensure generated test cases are committed.
-- [ ] Ensure LLM integration code and sample output are committed.
-- [ ] Update `README.md` with how to run the project.
-- [ ] Update `README.md` with what would be built next with more time.
-- [ ] Keep `ai-usage-log.md` updated with every AI tool used, task helped with, and output produced.
-- [ ] Share the GitHub repository link.
+- [x] Ensure the repository is public.
+- [x] Ensure `prompts.md` contains raw prompts exactly as written.
+- [x] Ensure generated test cases are committed (26 cases; Gherkin in `TEST-CASES.md`, executable specs, design artifacts).
+- [x] Ensure LLM integration code and sample output are committed.
+- [x] Update `README.md` with how to run the project.
+- [x] Update `README.md` with what would be built next with more time.
+- [x] Keep `ai-usage-log.md` updated with every AI tool used, task helped with, and output produced.
+- [x] Live demo published to GitHub Pages and linked from the README.
+- [ ] Share the GitHub repository link. (repo is public and ready: https://github.com/MrNewDelhi/testmu-sdet1-anmol)

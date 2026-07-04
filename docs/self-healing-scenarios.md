@@ -170,10 +170,10 @@ The screenshot (v8) is not redactable as text; a caller handling PII-bearing
 pages should gate it. See `src/framework/privacy/redact.ts` and
 `tests/framework/redact.spec.ts`.
 
-## Why Generated Cases Now Help
+## How the generated cases relate to self-healing
 
-The generated Task 2 cases are not default executable tests anymore. They are structured design artifacts with Playwright-style drafts and self-healing notes. This keeps `npm test` clean while preserving the interview evidence for:
+The Task 2 cases exist in two forms: **executable specs** under `tests/{login,dashboard,api}/` that run in `npm test`, and **structured design artifacts** under `tests/generated/` (Playwright-style drafts + self-healing notes) that are excluded from the default run. The artifacts capture where self-healing / failure analysis would earn their keep:
 
-- Login selector drift
+- Login selector drift (submit button id/class changes)
 - Dashboard navigation and responsive drift
-- API contract failures that are better suited to LLM failure explanation than locator healing
+- API contract failures that suit LLM failure explanation more than locator healing

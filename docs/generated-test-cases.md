@@ -40,4 +40,4 @@ Latest local result:
 26 passed
 ```
 
-The full default suite adds the two self-healing demos on top of these 26 generated cases (28 total when `XAI_API_KEY` is set).
+Beyond these 26 generated cases, the default suite (`npm test`) also runs the self-healing v1–v6 demos and the framework unit tests (confidence, cache, contract, deterministic API classifier, and PII redaction); the demos that make a live xAI call need `XAI_API_KEY`. The deliberately-failing v7–v10 demos stay out of the default run via `testIgnore` and are exercised through `npm run test:self-healing:v7` / `:v9`.

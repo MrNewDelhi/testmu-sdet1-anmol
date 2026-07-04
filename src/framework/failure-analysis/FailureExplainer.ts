@@ -13,6 +13,16 @@ import { redact } from '../privacy/redact.js';
  * suggested fix, and a category (product-bug / environment / flaky / test-bug).
  * The result is attached to the Playwright report.
  *
+ * Why Option A (Failure Explainer) over Option B (Flaky Classifier):
+ * A pays off on the very first failed run and needs no historical corpus — the
+ * page state / API response exists right at the moment of failure, so the model
+ * gets real, high-signal context immediately. Option B (bucketing failures as
+ * real-bug / environment / flaky) only becomes meaningful once you have run
+ * history and retries, and flakiness *detection* is already deterministic
+ * (retry-recovered + history flip-flops), so the LLM adds the least value there.
+ * We still collect B's substrate (persisted run history + dedup in mode B), so a
+ * flaky classifier is a natural follow-on rather than a different direction.
+ *
  * v11: every text field is PII-redacted before it leaves for the remote model.
  */
 export interface FailureContext extends FailureAnalysisRequest {}
